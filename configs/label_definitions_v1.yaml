@@ -1,0 +1,55 @@
+# Label definitions used by the LLM prompt (labels/prompts.py).
+# Keys and their order must match the submission columns exactly.
+# Edit `definition` / `notes` freely; they are inserted verbatim into the prompt.
+
+labels:
+  ACL:
+    definition: anterior cruciate ligament injury
+    notes: partial or complete tear, sprain or rupture of the ACL (native ligament or graft).
+  MCL:
+    definition: medial collateral ligament injury
+    notes: sprain, partial or complete tear of the medial (tibial) collateral ligament.
+  Medial Meniscus:
+    definition: medial meniscus tear
+    notes: tear of any part of the medial meniscus (horn, body, root). Intrasubstance degeneration without a tear is not a tear.
+  Lateral Meniscus:
+    definition: lateral meniscus tear
+    notes: tear of any part of the lateral meniscus (horn, body, root). Intrasubstance degeneration without a tear is not a tear.
+  Medial OA:
+    definition: osteoarthritis of the medial tibiofemoral compartment
+    notes: degenerative changes such as cartilage loss, osteophytes, subchondral sclerosis or cysts in the medial femorotibial compartment.
+  Lateral OA:
+    definition: osteoarthritis of the lateral tibiofemoral compartment
+    notes: degenerative changes such as cartilage loss, osteophytes, subchondral sclerosis or cysts in the lateral femorotibial compartment.
+  PF OA:
+    definition: patellofemoral osteoarthritis
+    notes: degenerative changes of the patellofemoral compartment (patellar or trochlear cartilage loss, osteophytes).
+  Effusion:
+    definition: joint effusion / excess fluid
+    notes: increased intra-articular fluid. A trace or physiological amount of fluid is not an effusion.
+  Synovitis:
+    definition: inflammation of the joint lining
+    notes: synovitis or synovial thickening/inflammation, including Hoffa (infrapatellar fat pad) synovitis.
+  Baker's:
+    definition: Baker's (popliteal) cyst
+    notes: popliteal / Baker cyst of any size.
+  Contusion:
+    definition: bone contusion / bone bruise
+    notes: traumatic bone marrow edema / bone bruise. Degenerative subchondral edema alone is not a contusion.
+  Fracture:
+    definition: fracture
+    notes: any acute or subacute fracture of the bones around the knee, including osteochondral and avulsion fractures.
+
+# Post-operative / reconstructed structures.
+# The LLM reports the state of the structure as it is now (e.g. intact ACL graft -> negative,
+# re-torn graft -> positive) and lists the affected labels in "postop_labels" so they can be logged.
+# `rule` is applied later in labels/build_targets.py:
+#   as_reported - keep the LLM state (default)
+#   uncertain   - force state to uncertain
+#   mask        - give the label weight 0 for that study
+postoperative:
+  rule: as_reported
+  instruction: >-
+    If the structure was operated on (e.g. ACL reconstruction graft, meniscectomy or meniscal repair),
+    classify the current state of the structure or graft as described in the report and add the label
+    name to "postop_labels".
