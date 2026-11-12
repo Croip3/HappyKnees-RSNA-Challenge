@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/
+results/
+runs/
+build/
+weights/
+*.log
+submission.csv

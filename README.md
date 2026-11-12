@@ -1,13 +1,62 @@
 # RSNA Knee Abnormality Detection
 
-Cross-slice attention classifier on frozen DINOv2 slice embeddings, trained on labels extracted
-from radiology reports by an LLM (Qwen3.8-27B). Twelve findings per study, scored by macro ROC-AUC.
+Predicts 12 findings per knee MRI study (ACL, MCL, both menisci, three OA compartments, effusion,
+synovitis, Baker's cyst, contusion, fracture). Scored by macro ROC-AUC.
+
+## Idea
+
+- **Labels from reports.** Only 58 training studies have gold labels, but every study has a radiology
+  report. An LLM (Qwen3.8-27B) marks each finding in the report as positive, negative, uncertain or not
+  mentioned. These states become soft targets with per-state weights. The 58 gold studies are used to
+  tune the label definitions and to validate.
+- **Frozen backbone, small head.** A frozen DINOv2 embeds every slice once, and only a small attention
+  model is trained (5 folds in about 1 minute on one GPU). The ~570 GB of DICOMs are processed in a
+  single pass on Kaggle.
+
+## Architecture
 
 ```
 DICOM ──► preprocess (uint8 stacks per plane) ──► frozen backbone (per-slice CLS + mean-patch) ──┐
 reports ─► LLM (states per finding) ─► gold validation ─► soft targets + weights ────────────────┼─► cross-slice attention head (5 folds)
                                                                                                  └─► offline Kaggle notebook ─► submission.csv
 ```
+
+1. **Preprocess:** one series per plane (sagittal, coronal, axial), preferring fluid-sensitive
+   fat-suppressed sequences, resampled to 448 px uint8 slice stacks.
+2. **Backbone:** DINOv2 ViT-S/14 with registers, frozen. Each slice gives its CLS token plus the mean
+   patch token (optionally a 4x4 grid of pooled patch tokens).
+3. **Cross-slice model** ([cross_slice.py](src/knee/models/cross_slice.py), d = 256):
+   - slice token = projected features + slice-position, plane and sequence-type embeddings
+   - 2 within-plane transformer layers; each slice attends to its ±2 neighbours
+   - 1 fusion layer across all planes
+   - per-finding attention pooling: one learned query per finding gives 12 logits
+4. **Inference:** 5-fold ensemble in an internet-off Kaggle notebook.
+
+## Results
+
+Run `full_v1`: out-of-fold predictions from 5 folds on about 1,870 LLM-labelled studies, with a
+224 px backbone input.
+
+| Label | AUC vs LLM | AUC vs gold |
+|---|---|---|
+| ACL | 0.753 | 0.760 |
+| MCL | 0.706 | 0.744 |
+| Medial Meniscus | 0.755 | 0.639 |
+| Lateral Meniscus | 0.710 | 0.677 |
+| Medial OA | 0.836 | 0.851 |
+| Lateral OA | 0.824 | 0.810 |
+| PF OA | 0.784 | 0.740 |
+| Effusion | 0.912 | 0.824 |
+| Synovitis | 0.780 | 0.771 |
+| Baker's | 0.713 | 0.781 |
+| Contusion | 0.769 | 0.702 |
+| Fracture | 0.796 | 0.583 |
+| **Macro** | **0.778** | **0.740** |
+
+The gold column covers only 58 studies, so per-label gold AUCs are noisy. Feeding the backbone at
+448 px did not help (0.773 vs LLM, 0.708 vs gold).
+
+## Configuration
 
 Everything is driven by `configs/default.yaml`. Any value can be overridden on the command line
 with `--set section.key=value` (repeatable) or a YAML file passed with `--config`. Every stage

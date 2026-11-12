@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "knee"
+version = "0.1.0"
+description = "RSNA Knee Abnormality Detection: cross-slice attention classifier with LLM-derived labels"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "pydicom>=2.4",
+    "opencv-python-headless",
+    "tqdm",
+    "rich",
+    "scikit-learn",
+    "torch>=2.1",
+    "timm>=1.0",
+]
+
+[project.optional-dependencies]
+decode = ["pylibjpeg", "pylibjpeg-libjpeg", "pylibjpeg-openjpeg", "python-gdcm"]
+labels = ["langdetect", "requests"]
+dev = ["pytest", "iterative-stratification"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

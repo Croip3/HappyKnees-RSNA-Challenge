@@ -1,0 +1,13 @@
+# Settings for the full-data run (merged over default.yaml with --config configs/full.yaml).
+# One preprocessing pass at 448 px; the feature stage resizes to backbone.image_size on the GPU,
+# so 224 and 448 backbone inputs come from the same cache. Use --set backbone.image_size=448 for
+# the 448 variant (training and inference read the matching feature folder via the feature tag).
+preprocess:
+  image_size: 448
+backbone:
+  image_size: 448
+features:
+  patch_grid: 4
+  mirror: true
+model:
+  patch_attention: true

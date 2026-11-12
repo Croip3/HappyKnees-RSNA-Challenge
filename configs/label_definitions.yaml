@@ -1,0 +1,77 @@
+# Label definitions used by the LLM prompt (labels/prompts.py).
+# Keys and their order must match the submission columns exactly.
+# Edit `definition` / `notes` freely; they are inserted verbatim into the prompt.
+
+labels:
+  ACL:
+    definition: anterior cruciate ligament injury
+    notes: >-
+      complete tear or high-grade partial tear (fiber discontinuity) of the ACL or ACL graft.
+      Low-grade or interstitial partial tears, grade 1-2 sprains/injuries, mucoid degeneration,
+      cystic change or increased signal without a definite tear count as negative.
+  MCL:
+    definition: medial collateral ligament injury
+    notes: >-
+      partial (grade 2) or complete (grade 3) tear of the medial (tibial) collateral ligament.
+      Grade 1 sprain, low-grade injury, periligamentous edema or thickening without a tear count as negative.
+  Medial Meniscus:
+    definition: medial meniscus tear
+    notes: tear of any part of the medial meniscus (horn, body, root). Intrasubstance degeneration without a tear is not a tear.
+  Lateral Meniscus:
+    definition: lateral meniscus tear
+    notes: tear of any part of the lateral meniscus (horn, body, root). Intrasubstance degeneration without a tear is not a tear.
+  Medial OA:
+    definition: osteoarthritis of the medial tibiofemoral compartment
+    notes: >-
+      osteoarthritis/arthrosis, osteophytes, or high-grade (grade 3-4, full or near full thickness) cartilage
+      loss in the medial femorotibial compartment. Low-grade (grade 1-2) chondromalacia/chondrosis, superficial
+      fissuring, softening, thinning or heterogeneity of cartilage alone count as negative.
+  Lateral OA:
+    definition: osteoarthritis of the lateral tibiofemoral compartment
+    notes: >-
+      osteoarthritis/arthrosis, osteophytes, or high-grade (grade 3-4, full or near full thickness) cartilage
+      loss in the lateral femorotibial compartment. Low-grade (grade 1-2) chondromalacia/chondrosis, superficial
+      fissuring, softening, thinning or heterogeneity of cartilage alone count as negative.
+  PF OA:
+    definition: patellofemoral osteoarthritis
+    notes: >-
+      osteoarthritis/arthrosis, osteophytes, or high-grade (grade 3-4, full or near full thickness) cartilage
+      loss or defects of the patella or trochlea. Low-grade (grade 1-2) chondromalacia/chondrosis, superficial
+      fissuring, softening, thinning or heterogeneity of cartilage alone count as negative.
+  Effusion:
+    definition: joint effusion / excess fluid
+    notes: >-
+      moderate or large joint effusion, or an effusion without a size qualifier: positive.
+      A small, mild or minimal effusion: uncertain. A trace or physiological amount of fluid: negative.
+  Synovitis:
+    definition: inflammation of the joint lining
+    notes: synovitis or synovial thickening/inflammation, including Hoffa (infrapatellar fat pad) synovitis.
+  Baker's:
+    definition: Baker's (popliteal) cyst
+    notes: popliteal / Baker cyst of any size.
+  Contusion:
+    definition: bone contusion / bone bruise
+    notes: >-
+      traumatic bone contusion / bone bruise (bone marrow edema after trauma). Small, tiny or mild focal
+      bone marrow edema: uncertain. Subchondral edema related to cartilage defects, osteoarthritis,
+      osteochondral lesions or degeneration: negative.
+  Fracture:
+    definition: fracture
+    notes: >-
+      fracture of a bone around the knee (e.g. tibial plateau, femoral condyle, patella, fibular head, avulsion
+      fracture, subchondral insufficiency fracture). Osteochondral injuries or fractures of the articular surface,
+      impaction injuries of the cartilage-bone surface and trabecular microfractures within a bone bruise count as negative.
+
+# Post-operative / reconstructed structures.
+# The LLM reports the state of the structure as it is now (e.g. intact ACL graft -> negative,
+# re-torn graft -> positive) and lists the affected labels in "postop_labels" so they can be logged.
+# `rule` is applied later in labels/build_targets.py:
+#   as_reported - keep the LLM state (default)
+#   uncertain   - force state to uncertain
+#   mask        - give the label weight 0 for that study
+postoperative:
+  rule: as_reported
+  instruction: >-
+    If the structure was operated on (e.g. ACL reconstruction graft, meniscectomy or meniscal repair),
+    classify the current state of the structure or graft as described in the report and add the label
+    name to "postop_labels".

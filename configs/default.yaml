@@ -1,0 +1,129 @@
+# Default configuration. Every value can be overridden from the CLI:
+#   python scripts/<stage>.py --config configs/my.yaml --set train.lr=1e-4 --set model.slice_context=all
+# Relative paths are resolved against the project root (the folder containing configs/).
+
+paths:
+  data_root: auto            # competition folder with train.csv etc.; "auto" = /kaggle/input/... or data/raw
+  train_images: null         # default: {data_root}/train_series
+  test_images: null          # default: {data_root}/test_series
+  cache_dir: data/cache      # uint8 image cache (one .npz per study)
+  features_dir: data/features
+  labels_dir: data/labels    # LLM jsonl + labels_final.csv
+  results_dir: results
+  runs_dir: runs
+  label_definitions: configs/label_definitions.yaml
+
+preprocess:
+  series_per_plane: 1
+  target_slices: 32          # tie-breaker: prefer series with slice count closest to this
+  prefer_orthogonal: false   # tie-breaker before slice count: avoid oblique series (e.g. ACL-oblique coronal)
+  max_slices_per_series: 48
+  resample_range: [0.02, 0.98]
+  image_size: 224            # multiple of 14 for DINOv2 (224 or 448)
+  crop_mm: 140.0
+  crop_center: image         # image | foreground
+  clip_percentiles: [1.0, 99.0]
+  canonical_orientation: true  # flip/transpose in-plane axes to a standard patient orientation
+  normalize_laterality: true   # mirror right knees to left orientation when laterality is known
+  laterality_sources: [tag, description, position]  # tried in order; position = sign of image-center x
+                                                    # (agrees with the tag in 97.2% of train studies)
+  num_workers: 8
+  compress: true             # np.savez_compressed
+
+llm:
+  backend: ollama            # ollama | openai (any OpenAI-compatible server, e.g. vllm serve) | vllm (in-process)
+  model: qwen3.8:27b         # ollama tag; HF ids for vllm/openai, e.g. Qwen/Qwen3.8-27B or a 4-bit build
+  fallback_model: qwen3.5:9b  # smaller/faster model for the same backend (verified ids: ollama qwen3.5:9b;
+                              # vllm Qwen/Qwen3-14B-AWQ or Qwen/Qwen3.5-9B; HF Qwen/Qwen3.8-27B is the main model)
+  use_fallback: false
+  quantization: null         # vllm only (awq | gptq | compressed-tensors ...); null = from the checkpoint
+  base_url: http://127.0.0.1:11434
+  api_key: EMPTY
+  temperature: 0.0
+  max_tokens: 1200
+  num_ctx: 8192              # ollama context window
+  concurrency: 4             # parallel requests for HTTP backends
+  max_report_chars: 6000     # longer reports are truncated (head + tail)
+  timeout_s: 600
+  think: false               # disable reasoning mode
+  vllm:
+    tensor_parallel_size: 1
+    max_model_len: 8192
+    gpu_memory_utilization: 0.90
+    dtype: auto
+  output_jsonl: llm_labels.jsonl   # inside paths.labels_dir
+
+targets:
+  gold_weight: 4.0
+  positive: {target: 1.0, weight: 1.0}
+  negative: {target: 0.0, weight: 1.0}
+  uncertain: {target: 0.6, weight: 0.5}
+  not_mentioned: {target: 0.0, weight: 0.3}
+  not_mentioned_target: zero         # zero | gold_rate (empirical gold positive rate for that LLM state)
+  gold_rate_min_count: 10            # pool across labels if per-label count is below this
+  calibrate_all_states: false        # target = P(gold=1 | label, LLM state), shrunk to the pooled state rate
+  calibration_strength: 10.0         # pseudo-count of the pooled prior for calibrate_all_states
+  min_kappa: 0.4                     # per-label kill switch threshold on gold agreement
+  kill_action: downweight            # downweight | mask
+  kill_weight_factor: 0.25
+
+backbone:
+  name: dinov2_vits14_reg    # see models/backbones.py registry
+  weights_path: null         # local weights file/dir; null = timm default (needs internet)
+  frozen: true
+  channel_mode: replicate    # replicate | neighbors
+  image_size: null           # default: preprocess.image_size
+
+features:
+  patch_grid: 4              # pooled patch grid side (4 -> 16 tokens); 0 = do not store
+  batch_size: 128
+  num_workers: 4
+  amp: true
+  mirror: false              # also store features of the width-flipped images (mirror TTA/augmentation)
+
+model:
+  d_model: 256
+  n_layers: 2
+  n_heads: 8
+  slice_context: 5           # odd int >= 3, or "all"
+  fusion_layers: 1
+  head: attention            # attention | mean
+  dropout: 0.1
+  pos_encoding: sinusoidal   # sinusoidal | binned
+  pos_bins: 16
+  n_seq_types: 4
+  feature_mode: cls_mean     # cls_mean | cls | mean
+  patch_attention: false
+  token_dropout: 0.1         # randomly drop slice tokens during training
+
+train:
+  folds: 5
+  run_folds: null            # e.g. [0] to train a subset of folds
+  epochs: 30
+  batch_size: 32
+  lr: 3.0e-4
+  weight_decay: 0.05
+  warmup_epochs: 1.0
+  grad_clip: 1.0
+  amp: true
+  early_stopping_patience: 8
+  seed: 42
+  num_workers: 2
+  log_every: 20
+  pos_weight: false
+  mirror_aug: 0.0            # probability of anatomical mirror (needs features.mirror for coronal/axial);
+                             # 0 by default: all studies are laterality-normalized, mirroring adds
+                             # right-oriented knees that never occur at test time
+  slice_drop_aug: 0.0
+  tensorboard: false
+  backbone_lr_factor: 0.1    # end-to-end mode (backbone.frozen=false): backbone lr = lr * factor
+  e2e_max_slices: 16         # end-to-end mode: random slices per stack per training step
+  grad_checkpointing: true   # end-to-end mode
+  run_name: null             # default: timestamp + backbone + slice_context
+
+infer:
+  checkpoints: null          # list of checkpoint paths or a run directory
+  tta_mirror: false
+  batch_size: 8
+  dry_run: 0                 # >0: only the first N test studies
+  output: submission.csv
