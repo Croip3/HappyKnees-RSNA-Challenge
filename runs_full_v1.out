@@ -1,0 +1,2353 @@
+17:55:11 INFO run dir: /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1
+17:55:11 INFO git: b20de76 | device: {"python": "3.12.3", "platform": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39", "torch": "2.11.0+cu128", "cuda_available": true, "gpus": ["NVIDIA GeForce RTX 4080 SUPER (15.5 GB)"], "bf16_supported": true}
+17:55:11 INFO config:
+{
+ "paths": {
+  "data_root": "/home/longarm/development/RSNA Knee/rsna-knee/data/raw",
+  "train_images": "/home/longarm/development/RSNA Knee/rsna-knee/data/raw/train_series",
+  "test_images": "/home/longarm/development/RSNA Knee/rsna-knee/data/raw/test_series",
+  "cache_dir": "/home/longarm/development/RSNA Knee/rsna-knee/data/cache",
+  "features_dir": "/home/longarm/development/RSNA Knee/rsna-knee/data/features",
+  "labels_dir": "/home/longarm/development/RSNA Knee/rsna-knee/data/labels",
+  "results_dir": "/home/longarm/development/RSNA Knee/rsna-knee/results",
+  "runs_dir": "/home/longarm/development/RSNA Knee/rsna-knee/runs",
+  "label_definitions": "/home/longarm/development/RSNA Knee/rsna-knee/configs/label_definitions.yaml"
+ },
+ "preprocess": {
+  "series_per_plane": 1,
+  "target_slices": 32,
+  "prefer_orthogonal": false,
+  "max_slices_per_series": 48,
+  "resample_range": [
+   0.02,
+   0.98
+  ],
+  "image_size": 448,
+  "crop_mm": 140.0,
+  "crop_center": "image",
+  "clip_percentiles": [
+   1.0,
+   99.0
+  ],
+  "canonical_orientation": true,
+  "normalize_laterality": true,
+  "laterality_sources": [
+   "tag",
+   "description",
+   "position"
+  ],
+  "num_workers": 8,
+  "compress": true
+ },
+ "llm": {
+  "backend": "ollama",
+  "model": "qwen3.8:27b",
+  "fallback_model": "qwen3.5:9b",
+  "use_fallback": false,
+  "quantization": null,
+  "base_url": "http://127.0.0.1:11434",
+  "api_key": "EMPTY",
+  "temperature": 0.0,
+  "max_tokens": 1200,
+  "num_ctx": 8192,
+  "concurrency": 4,
+  "max_report_chars": 6000,
+  "timeout_s": 600,
+  "think": false,
+  "vllm": {
+   "tensor_parallel_size": 1,
+   "max_model_len": 8192,
+   "gpu_memory_utilization": 0.9,
+   "dtype": "auto"
+  },
+  "output_jsonl": "llm_labels.jsonl"
+ },
+ "targets": {
+  "gold_weight": 4.0,
+  "positive": {
+   "target": 1.0,
+   "weight": 1.0
+  },
+  "negative": {
+   "target": 0.0,
+   "weight": 1.0
+  },
+  "uncertain": {
+   "target": 0.6,
+   "weight": 0.5
+  },
+  "not_mentioned": {
+   "target": 0.0,
+   "weight": 0.3
+  },
+  "not_mentioned_target": "zero",
+  "gold_rate_min_count": 10,
+  "calibrate_all_states": false,
+  "calibration_strength": 10.0,
+  "min_kappa": 0.4,
+  "kill_action": "downweight",
+  "kill_weight_factor": 0.25
+ },
+ "backbone": {
+  "name": "dinov2_vits14_reg",
+  "weights_path": null,
+  "frozen": true,
+  "channel_mode": "replicate",
+  "image_size": 224
+ },
+ "features": {
+  "patch_grid": 0,
+  "batch_size": 128,
+  "num_workers": 4,
+  "amp": true,
+  "mirror": true
+ },
+ "model": {
+  "d_model": 256,
+  "n_layers": 2,
+  "n_heads": 8,
+  "slice_context": 5,
+  "fusion_layers": 1,
+  "head": "attention",
+  "dropout": 0.1,
+  "pos_encoding": "sinusoidal",
+  "pos_bins": 16,
+  "n_seq_types": 4,
+  "feature_mode": "cls_mean",
+  "patch_attention": false,
+  "token_dropout": 0.1
+ },
+ "train": {
+  "folds": 5,
+  "run_folds": null,
+  "epochs": 30,
+  "batch_size": 32,
+  "lr": 0.0003,
+  "weight_decay": 0.05,
+  "warmup_epochs": 1.0,
+  "grad_clip": 1.0,
+  "amp": true,
+  "early_stopping_patience": 8,
+  "seed": 42,
+  "num_workers": 2,
+  "log_every": 20,
+  "pos_weight": false,
+  "mirror_aug": 0.0,
+  "slice_drop_aug": 0.0,
+  "tensorboard": false,
+  "backbone_lr_factor": 0.1,
+  "e2e_max_slices": 16,
+  "grad_checkpointing": true,
+  "run_name": "full_v1"
+ },
+ "infer": {
+  "checkpoints": null,
+  "tta_mirror": false,
+  "batch_size": 8,
+  "dry_run": 0,
+  "output": "submission.csv"
+ }
+}
+17:55:11 INFO labels: /home/longarm/development/RSNA Knee/rsna-knee/data/labels/labels_final.csv | features: /home/longarm/development/RSNA Knee/rsna-knee/data/features/dinov2_vits14_reg_224_replicate_g0_pbfd3af/train (dinov2_vits14_reg_224_replicate_g0_pbfd3af) | 4407 studies with inputs (0 without)
+17:55:11 INFO skipping 2537 studies without any weighted label
+17:55:11 INFO folds: loaded folds_5_seed42.csv
+17:55:11 INFO label statistics (training studies):
+label               gold    pos    neg    unc    n/m  masked   pos%
+ACL                   58    209   1383     84    136       0   17.0
+MCL                   58     89   1515     23    185       0    6.5
+Medial Meniscus       58    701    947     77     87       0   43.0
+Lateral Meniscus      58    245   1341     52    174       0   17.1
+Medial OA             58    423    954      4    431       0   23.6
+Lateral OA            58    278    998      6    530       0   15.8
+PF OA                 58    486    961     15    350       0   27.9
+Effusion              58    468    583    606    155       0   59.3
+Synovitis             58    376    104     14   1318       0   22.3
+Baker's               58    453    453      8    898       0   25.3
+Contusion             58    196    973    142    501       0   19.1
+Fracture              58     63    616     24   1109       0    5.6
+17:55:12 INFO loaded features for 1870 studies in 1.4s (0.24 GB in RAM, in_dim 768, grid_dim 0, 3 stacks)
+17:55:12 INFO fold 0: train 1493, val 377 (gold 12), ~46 steps/epoch
+17:55:12 INFO fold 1: train 1502, val 368 (gold 10), ~46 steps/epoch
+17:55:12 INFO fold 2: train 1492, val 378 (gold 12), ~46 steps/epoch
+17:55:12 INFO fold 3: train 1488, val 382 (gold 11), ~46 steps/epoch
+17:55:12 INFO fold 4: train 1505, val 365 (gold 13), ~47 steps/epoch
+17:55:13 INFO [fold 0] train 1493 / val 377 studies (gold in val: 12) | 2.84M params | 46 steps/epoch x 30 epochs | mirror_aug 0.0
+17:55:14 INFO   fold 0 ep 0 step 20/46 | loss 0.5225 | lr 1.37e-04 | gnorm 0.697 | 926 samples/s | gpu mem 0.26 GB
+17:55:14 INFO   fold 0 ep 0 step 40/46 | loss 0.5608 | lr 2.67e-04 | gnorm 0.560 | 3451 samples/s | gpu mem 0.26 GB
+17:55:14 INFO [fold 0] epoch 0: train loss 0.5592 | val loss 0.5305 | macro AUC llm 0.6567 | gold 0.5400 | pred std 0.0046 | 0m01s | elapsed 0m01s, ETA 0m32s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.579      0.656      0.001      317       12
+MCL                     0.670      0.900      0.001      318       12
+Medial Meniscus         0.632      0.657      0.007      330       12
+Lateral Meniscus        0.453      0.188      0.002      309       12
+Medial OA               0.677      0.519      0.008      270       12
+Lateral OA              0.716      0.350      0.009      244       12
+PF OA                   0.629      0.438      0.007      295       12
+Effusion                0.773      0.514      0.005      213       12
+Synovitis               0.707      0.667      0.006       95       12
+Baker's                 0.779      0.407      0.007      185       12
+Contusion               0.593      0.667      0.002      228       12
+Fracture                0.673      0.519      0.001      148       12
+MACRO                   0.657      0.540      0.005
+17:55:14 WARNING !!! COLLAPSE WARNING: mean per-label std of val predictions is 0.0046 (< 0.02): predictions are collapsing to the base rate
+17:55:14 INFO   fold 0 ep 1 step 20/46 | loss 0.5001 | lr 3.00e-04 | gnorm 0.467 | 3225 samples/s | gpu mem 0.26 GB
+17:55:15 INFO   fold 0 ep 1 step 40/46 | loss 0.5449 | lr 2.99e-04 | gnorm 0.939 | 3539 samples/s | gpu mem 0.26 GB
+17:55:15 INFO [fold 0] epoch 1: train loss 0.5199 | val loss 0.5313 | macro AUC llm 0.6129 | gold 0.5522 | pred std 0.0455 | 0m01s | elapsed 0m02s, ETA 0m23s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.440      0.562      0.023      317       12
+MCL                     0.489      0.250      0.021      318       12
+Medial Meniscus         0.671      0.743      0.072      330       12
+Lateral Meniscus        0.391      0.219      0.012      309       12
+Medial OA               0.755      0.407      0.074      270       12
+Lateral OA              0.788      0.900      0.040      244       12
+PF OA                   0.675      0.469      0.067      295       12
+Effusion                0.793      0.743      0.040      213       12
+Synovitis               0.711      0.667      0.081       95       12
+Baker's                 0.767      0.630      0.056      185       12
+Contusion               0.462      0.519      0.049      228       12
+Fracture                0.414      0.519      0.012      148       12
+MACRO                   0.613      0.552      0.046
+17:55:15 INFO   fold 0 ep 2 step 20/46 | loss 0.4845 | lr 2.98e-04 | gnorm 0.418 | 3190 samples/s | gpu mem 0.26 GB
+17:55:15 INFO   fold 0 ep 2 step 40/46 | loss 0.4446 | lr 2.97e-04 | gnorm 0.485 | 3462 samples/s | gpu mem 0.26 GB
+17:55:15 INFO [fold 0] epoch 2: train loss 0.5051 | val loss 0.5064 | macro AUC llm 0.6859 | gold 0.6449 | pred std 0.0558 | 0m01s | elapsed 0m02s, ETA 0m20s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.602      0.750      0.010      317       12
+MCL                     0.535      0.300      0.009      318       12
+Medial Meniscus         0.683      0.657      0.077      330       12
+Lateral Meniscus        0.725      0.688      0.027      309       12
+Medial OA               0.750      0.444      0.096      270       12
+Lateral OA              0.804      0.950      0.052      244       12
+PF OA                   0.682      0.438      0.124      295       12
+Effusion                0.794      0.771      0.085      213       12
+Synovitis               0.733      0.667      0.074       95       12
+Baker's                 0.750      0.704      0.072      185       12
+Contusion               0.464      0.630      0.025      228       12
+Fracture                0.710      0.741      0.019      148       12
+MACRO                   0.686      0.645      0.056
+17:55:15 INFO   fold 0 ep 3 step 20/46 | loss 0.5431 | lr 2.95e-04 | gnorm 0.994 | 3118 samples/s | gpu mem 0.26 GB
+17:55:16 INFO   fold 0 ep 3 step 40/46 | loss 0.4326 | lr 2.93e-04 | gnorm 0.496 | 3451 samples/s | gpu mem 0.26 GB
+17:55:16 INFO [fold 0] epoch 3: train loss 0.4905 | val loss 0.4900 | macro AUC llm 0.7033 | gold 0.6785 | pred std 0.1070 | 0m01s | elapsed 0m03s, ETA 0m18s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.580      0.656      0.025      317       12
+MCL                     0.565      0.600      0.017      318       12
+Medial Meniscus         0.704      0.686      0.098      330       12
+Lateral Meniscus        0.733      0.750      0.075      309       12
+Medial OA               0.764      0.481      0.181      270       12
+Lateral OA              0.805      0.950      0.142      244       12
+PF OA                   0.687      0.469      0.195      295       12
+Effusion                0.837      0.771      0.161      213       12
+Synovitis               0.731      0.667      0.181       95       12
+Baker's                 0.747      0.741      0.142      185       12
+Contusion               0.570      0.704      0.021      228       12
+Fracture                0.716      0.667      0.043      148       12
+MACRO                   0.703      0.678      0.107
+17:55:16 INFO   fold 0 ep 4 step 20/46 | loss 0.5089 | lr 2.90e-04 | gnorm 0.657 | 3160 samples/s | gpu mem 0.26 GB
+17:55:16 INFO   fold 0 ep 4 step 40/46 | loss 0.4314 | lr 2.87e-04 | gnorm 0.476 | 3504 samples/s | gpu mem 0.26 GB
+17:55:16 INFO [fold 0] epoch 4: train loss 0.4767 | val loss 0.4833 | macro AUC llm 0.7334 | gold 0.7028 | pred std 0.1226 | 0m01s | elapsed 0m03s, ETA 0m17s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.631      0.688      0.055      317       12
+MCL                     0.580      0.600      0.026      318       12
+Medial Meniscus         0.721      0.743      0.179      330       12
+Lateral Meniscus        0.736      0.812      0.066      309       12
+Medial OA               0.786      0.630      0.201      270       12
+Lateral OA              0.819      0.950      0.118      244       12
+PF OA                   0.707      0.469      0.152      295       12
+Effusion                0.893      0.857      0.225      213       12
+Synovitis               0.747      0.722      0.164       95       12
+Baker's                 0.724      0.593      0.162      185       12
+Contusion               0.699      0.778      0.054      228       12
+Fracture                0.757      0.593      0.071      148       12
+MACRO                   0.733      0.703      0.123
+17:55:17 INFO   fold 0 ep 5 step 20/46 | loss 0.4391 | lr 2.83e-04 | gnorm 0.709 | 3032 samples/s | gpu mem 0.26 GB
+17:55:17 INFO   fold 0 ep 5 step 40/46 | loss 0.4420 | lr 2.80e-04 | gnorm 0.532 | 3373 samples/s | gpu mem 0.26 GB
+17:55:17 INFO [fold 0] epoch 5: train loss 0.4649 | val loss 0.4755 | macro AUC llm 0.7454 | gold 0.7163 | pred std 0.1508 | 0m01s | elapsed 0m04s, ETA 0m16s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.676      0.719      0.089      317       12
+MCL                     0.604      0.550      0.048      318       12
+Medial Meniscus         0.723      0.771      0.155      330       12
+Lateral Meniscus        0.727      0.906      0.086      309       12
+Medial OA               0.793      0.630      0.237      270       12
+Lateral OA              0.812      0.800      0.164      244       12
+PF OA                   0.710      0.500      0.214      295       12
+Effusion                0.913      0.886      0.251      213       12
+Synovitis               0.739      0.722      0.190       95       12
+Baker's                 0.733      0.741      0.177      185       12
+Contusion               0.753      0.741      0.095      228       12
+Fracture                0.763      0.630      0.104      148       12
+MACRO                   0.745      0.716      0.151
+17:55:17 INFO   fold 0 ep 6 step 20/46 | loss 0.4535 | lr 2.75e-04 | gnorm 0.409 | 3067 samples/s | gpu mem 0.26 GB
+17:55:17 INFO   fold 0 ep 6 step 40/46 | loss 0.4474 | lr 2.71e-04 | gnorm 0.601 | 3425 samples/s | gpu mem 0.26 GB
+17:55:18 INFO [fold 0] epoch 6: train loss 0.4548 | val loss 0.4710 | macro AUC llm 0.7505 | gold 0.7420 | pred std 0.1524 | 0m01s | elapsed 0m04s, ETA 0m15s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.683      0.875      0.091      317       12
+MCL                     0.639      0.500      0.049      318       12
+Medial Meniscus         0.733      0.743      0.169      330       12
+Lateral Meniscus        0.709      0.938      0.110      309       12
+Medial OA               0.804      0.667      0.231      270       12
+Lateral OA              0.832      0.950      0.153      244       12
+PF OA                   0.717      0.531      0.190      295       12
+Effusion                0.913      0.914      0.268      213       12
+Synovitis               0.751      0.750      0.218       95       12
+Baker's                 0.714      0.630      0.152      185       12
+Contusion               0.782      0.741      0.102      228       12
+Fracture                0.728      0.667      0.097      148       12
+MACRO                   0.750      0.742      0.152
+17:55:18 INFO   fold 0 ep 7 step 20/46 | loss 0.4559 | lr 2.65e-04 | gnorm 0.381 | 3182 samples/s | gpu mem 0.26 GB
+17:55:18 INFO   fold 0 ep 7 step 40/46 | loss 0.5215 | lr 2.60e-04 | gnorm 0.590 | 3559 samples/s | gpu mem 0.26 GB
+17:55:18 INFO [fold 0] epoch 7: train loss 0.4458 | val loss 0.4722 | macro AUC llm 0.7611 | gold 0.7089 | pred std 0.1535 | 0m01s | elapsed 0m05s, ETA 0m14s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.728      0.812      0.143      317       12
+MCL                     0.676      0.550      0.050      318       12
+Medial Meniscus         0.732      0.571      0.140      330       12
+Lateral Meniscus        0.736      0.938      0.092      309       12
+Medial OA               0.802      0.556      0.195      270       12
+Lateral OA              0.826      0.800      0.157      244       12
+PF OA                   0.711      0.531      0.201      295       12
+Effusion                0.910      0.943      0.250      213       12
+Synovitis               0.744      0.694      0.168       95       12
+Baker's                 0.731      0.667      0.135      185       12
+Contusion               0.806      0.778      0.170      228       12
+Fracture                0.730      0.667      0.142      148       12
+MACRO                   0.761      0.709      0.154
+17:55:18 INFO   fold 0 ep 8 step 20/46 | loss 0.4632 | lr 2.54e-04 | gnorm 0.652 | 3155 samples/s | gpu mem 0.26 GB
+17:55:19 INFO   fold 0 ep 8 step 40/46 | loss 0.4136 | lr 2.49e-04 | gnorm 0.529 | 3444 samples/s | gpu mem 0.26 GB
+17:55:19 INFO [fold 0] epoch 8: train loss 0.4475 | val loss 0.4734 | macro AUC llm 0.7691 | gold 0.7151 | pred std 0.1451 | 0m01s | elapsed 0m06s, ETA 0m13s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.748      0.781      0.105      317       12
+MCL                     0.691      0.600      0.048      318       12
+Medial Meniscus         0.742      0.514      0.175      330       12
+Lateral Meniscus        0.732      0.969      0.086      309       12
+Medial OA               0.801      0.556      0.207      270       12
+Lateral OA              0.832      0.900      0.118      244       12
+PF OA                   0.712      0.531      0.167      295       12
+Effusion                0.920      0.943      0.272      213       12
+Synovitis               0.761      0.750      0.192       95       12
+Baker's                 0.714      0.667      0.146      185       12
+Contusion               0.803      0.778      0.126      228       12
+Fracture                0.774      0.593      0.098      148       12
+MACRO                   0.769      0.715      0.145
+17:55:19 INFO   fold 0 ep 9 step 20/46 | loss 0.4384 | lr 2.42e-04 | gnorm 0.526 | 3089 samples/s | gpu mem 0.26 GB
+17:55:19 INFO   fold 0 ep 9 step 40/46 | loss 0.4023 | lr 2.36e-04 | gnorm 0.485 | 3398 samples/s | gpu mem 0.26 GB
+17:55:19 INFO [fold 0] epoch 9: train loss 0.4308 | val loss 0.4797 | macro AUC llm 0.7598 | gold 0.7243 | pred std 0.1824 | 0m01s | elapsed 0m06s, ETA 0m12s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.726      0.812      0.200      317       12
+MCL                     0.642      0.650      0.112      318       12
+Medial Meniscus         0.739      0.486      0.196      330       12
+Lateral Meniscus        0.697      0.969      0.098      309       12
+Medial OA               0.810      0.704      0.206      270       12
+Lateral OA              0.839      0.800      0.118      244       12
+PF OA                   0.705      0.531      0.189      295       12
+Effusion                0.919      0.943      0.312      213       12
+Synovitis               0.756      0.722      0.210       95       12
+Baker's                 0.717      0.667      0.187      185       12
+Contusion               0.808      0.778      0.224      228       12
+Fracture                0.760      0.630      0.136      148       12
+MACRO                   0.760      0.724      0.182
+17:55:19 INFO   fold 0 ep 10 step 20/46 | loss 0.4422 | lr 2.28e-04 | gnorm 0.967 | 3087 samples/s | gpu mem 0.26 GB
+17:55:20 INFO   fold 0 ep 10 step 40/46 | loss 0.3708 | lr 2.22e-04 | gnorm 0.540 | 3355 samples/s | gpu mem 0.26 GB
+17:55:20 INFO [fold 0] epoch 10: train loss 0.4246 | val loss 0.4653 | macro AUC llm 0.7726 | gold 0.7513 | pred std 0.1693 | 0m01s | elapsed 0m07s, ETA 0m12s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.765      0.781      0.170      317       12
+MCL                     0.662      0.850      0.045      318       12
+Medial Meniscus         0.736      0.571      0.216      330       12
+Lateral Meniscus        0.722      0.938      0.110      309       12
+Medial OA               0.819      0.667      0.255      270       12
+Lateral OA              0.845      0.700      0.155      244       12
+PF OA                   0.731      0.594      0.187      295       12
+Effusion                0.929      0.943      0.288      213       12
+Synovitis               0.784      0.750      0.187       95       12
+Baker's                 0.733      0.815      0.154      185       12
+Contusion               0.807      0.704      0.163      228       12
+Fracture                0.740      0.704      0.102      148       12
+MACRO                   0.773      0.751      0.169
+17:55:20 INFO   fold 0 ep 11 step 20/46 | loss 0.3873 | lr 2.14e-04 | gnorm 0.925 | 3172 samples/s | gpu mem 0.26 GB
+17:55:20 INFO   fold 0 ep 11 step 40/46 | loss 0.4017 | lr 2.07e-04 | gnorm 0.669 | 3367 samples/s | gpu mem 0.26 GB
+17:55:20 INFO [fold 0] epoch 11: train loss 0.4152 | val loss 0.4655 | macro AUC llm 0.7727 | gold 0.7628 | pred std 0.1932 | 0m01s | elapsed 0m07s, ETA 0m11s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.768      0.844      0.146      317       12
+MCL                     0.652      0.750      0.115      318       12
+Medial Meniscus         0.743      0.657      0.228      330       12
+Lateral Meniscus        0.743      0.969      0.118      309       12
+Medial OA               0.818      0.704      0.287      270       12
+Lateral OA              0.857      0.850      0.183      244       12
+PF OA                   0.727      0.594      0.237      295       12
+Effusion                0.920      0.971      0.279      213       12
+Synovitis               0.754      0.778      0.202       95       12
+Baker's                 0.728      0.778      0.187      185       12
+Contusion               0.775      0.741      0.192      228       12
+Fracture                0.787      0.519      0.144      148       12
+MACRO                   0.773      0.763      0.193
+17:55:21 INFO   fold 0 ep 12 step 20/46 | loss 0.3893 | lr 1.99e-04 | gnorm 0.842 | 3125 samples/s | gpu mem 0.26 GB
+17:55:21 INFO   fold 0 ep 12 step 40/46 | loss 0.4111 | lr 1.92e-04 | gnorm 0.711 | 3476 samples/s | gpu mem 0.26 GB
+17:55:21 INFO [fold 0] epoch 12: train loss 0.4091 | val loss 0.4696 | macro AUC llm 0.7819 | gold 0.7136 | pred std 0.2190 | 0m01s | elapsed 0m08s, ETA 0m10s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.773      0.844      0.229      317       12
+MCL                     0.670      0.800      0.128      318       12
+Medial Meniscus         0.750      0.486      0.245      330       12
+Lateral Meniscus        0.724      0.812      0.143      309       12
+Medial OA               0.834      0.630      0.254      270       12
+Lateral OA              0.857      0.750      0.175      244       12
+PF OA                   0.745      0.531      0.214      295       12
+Effusion                0.916      0.914      0.332      213       12
+Synovitis               0.777      0.722      0.231       95       12
+Baker's                 0.725      0.741      0.220      185       12
+Contusion               0.828      0.667      0.262      228       12
+Fracture                0.784      0.667      0.196      148       12
+MACRO                   0.782      0.714      0.219
+17:55:21 INFO   fold 0 ep 13 step 20/46 | loss 0.3870 | lr 1.83e-04 | gnorm 0.460 | 3158 samples/s | gpu mem 0.26 GB
+17:55:21 INFO   fold 0 ep 13 step 40/46 | loss 0.3960 | lr 1.76e-04 | gnorm 0.581 | 3485 samples/s | gpu mem 0.26 GB
+17:55:21 INFO [fold 0] epoch 13: train loss 0.3975 | val loss 0.4638 | macro AUC llm 0.7751 | gold 0.7403 | pred std 0.1818 | 0m01s | elapsed 0m08s, ETA 0m10s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.772      0.875      0.206      317       12
+MCL                     0.629      0.900      0.086      318       12
+Medial Meniscus         0.726      0.343      0.209      330       12
+Lateral Meniscus        0.743      1.000      0.118      309       12
+Medial OA               0.854      0.667      0.209      270       12
+Lateral OA              0.861      0.600      0.131      244       12
+PF OA                   0.737      0.594      0.209      295       12
+Effusion                0.922      0.943      0.283      213       12
+Synovitis               0.717      0.778      0.213       95       12
+Baker's                 0.751      0.815      0.179      185       12
+Contusion               0.806      0.741      0.195      228       12
+Fracture                0.786      0.630      0.144      148       12
+MACRO                   0.775      0.740      0.182
+17:55:22 INFO   fold 0 ep 14 step 20/46 | loss 0.3925 | lr 1.67e-04 | gnorm 0.740 | 3249 samples/s | gpu mem 0.26 GB
+17:55:22 INFO   fold 0 ep 14 step 40/46 | loss 0.3494 | lr 1.60e-04 | gnorm 0.616 | 3519 samples/s | gpu mem 0.26 GB
+17:55:22 INFO [fold 0] epoch 14: train loss 0.3905 | val loss 0.4587 | macro AUC llm 0.7793 | gold 0.7606 | pred std 0.2018 | 0m01s | elapsed 0m09s, ETA 0m09s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.788      0.812      0.146      317       12
+MCL                     0.594      1.000      0.076      318       12
+Medial Meniscus         0.746      0.514      0.262      330       12
+Lateral Meniscus        0.751      0.938      0.122      309       12
+Medial OA               0.846      0.704      0.293      270       12
+Lateral OA              0.844      0.650      0.208      244       12
+PF OA                   0.759      0.594      0.238      295       12
+Effusion                0.920      0.971      0.297      213       12
+Synovitis               0.772      0.833      0.236       95       12
+Baker's                 0.742      0.815      0.217      185       12
+Contusion               0.816      0.667      0.194      228       12
+Fracture                0.773      0.630      0.132      148       12
+MACRO                   0.779      0.761      0.202
+17:55:22 INFO   fold 0 ep 15 step 20/46 | loss 0.4169 | lr 1.51e-04 | gnorm 1.126 | 3181 samples/s | gpu mem 0.26 GB
+17:55:22 INFO   fold 0 ep 15 step 40/46 | loss 0.4236 | lr 1.44e-04 | gnorm 1.473 | 3569 samples/s | gpu mem 0.26 GB
+17:55:23 INFO [fold 0] epoch 15: train loss 0.3807 | val loss 0.4704 | macro AUC llm 0.7778 | gold 0.7496 | pred std 0.2086 | 0m01s | elapsed 0m09s, ETA 0m08s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.779      0.750      0.201      317       12
+MCL                     0.663      0.800      0.128      318       12
+Medial Meniscus         0.732      0.457      0.251      330       12
+Lateral Meniscus        0.746      0.938      0.192      309       12
+Medial OA               0.839      0.667      0.235      270       12
+Lateral OA              0.843      0.800      0.169      244       12
+PF OA                   0.710      0.594      0.218      295       12
+Effusion                0.926      0.971      0.301      213       12
+Synovitis               0.732      0.833      0.244       95       12
+Baker's                 0.743      0.778      0.206      185       12
+Contusion               0.813      0.741      0.221      228       12
+Fracture                0.808      0.667      0.136      148       12
+MACRO                   0.778      0.750      0.209
+17:55:23 INFO   fold 0 ep 16 step 20/46 | loss 0.3385 | lr 1.35e-04 | gnorm 1.047 | 3111 samples/s | gpu mem 0.26 GB
+17:55:23 INFO   fold 0 ep 16 step 40/46 | loss 0.3547 | lr 1.28e-04 | gnorm 0.573 | 3536 samples/s | gpu mem 0.26 GB
+17:55:23 INFO [fold 0] epoch 16: train loss 0.3706 | val loss 0.4637 | macro AUC llm 0.7796 | gold 0.7589 | pred std 0.2118 | 0m01s | elapsed 0m10s, ETA 0m08s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.804      0.844      0.175      317       12
+MCL                     0.631      0.750      0.088      318       12
+Medial Meniscus         0.750      0.600      0.291      330       12
+Lateral Meniscus        0.753      0.875      0.135      309       12
+Medial OA               0.839      0.704      0.309      270       12
+Lateral OA              0.851      0.750      0.217      244       12
+PF OA                   0.737      0.594      0.230      295       12
+Effusion                0.917      1.000      0.292      213       12
+Synovitis               0.757      0.806      0.218       95       12
+Baker's                 0.736      0.815      0.252      185       12
+Contusion               0.790      0.704      0.202      228       12
+Fracture                0.790      0.667      0.134      148       12
+MACRO                   0.780      0.759      0.212
+17:55:23 INFO   fold 0 ep 17 step 20/46 | loss 0.3225 | lr 1.19e-04 | gnorm 0.923 | 3144 samples/s | gpu mem 0.26 GB
+17:55:23 INFO   fold 0 ep 17 step 40/46 | loss 0.3967 | lr 1.12e-04 | gnorm 0.878 | 3509 samples/s | gpu mem 0.26 GB
+17:55:24 INFO [fold 0] epoch 17: train loss 0.3554 | val loss 0.4658 | macro AUC llm 0.7722 | gold 0.7549 | pred std 0.2024 | 0m01s | elapsed 0m11s, ETA 0m07s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.787      0.875      0.131      317       12
+MCL                     0.591      0.650      0.058      318       12
+Medial Meniscus         0.734      0.514      0.271      330       12
+Lateral Meniscus        0.745      1.000      0.146      309       12
+Medial OA               0.838      0.778      0.295      270       12
+Lateral OA              0.844      0.650      0.200      244       12
+PF OA                   0.733      0.656      0.246      295       12
+Effusion                0.918      1.000      0.297      213       12
+Synovitis               0.746      0.861      0.242       95       12
+Baker's                 0.740      0.815      0.245      185       12
+Contusion               0.784      0.667      0.162      228       12
+Fracture                0.807      0.593      0.134      148       12
+MACRO                   0.772      0.755      0.202
+17:55:24 INFO   fold 0 ep 18 step 20/46 | loss 0.3958 | lr 1.03e-04 | gnorm 0.904 | 3181 samples/s | gpu mem 0.26 GB
+17:55:24 INFO   fold 0 ep 18 step 40/46 | loss 0.3563 | lr 9.65e-05 | gnorm 0.728 | 3583 samples/s | gpu mem 0.26 GB
+17:55:24 INFO [fold 0] epoch 18: train loss 0.3462 | val loss 0.4713 | macro AUC llm 0.7800 | gold 0.7642 | pred std 0.2264 | 0m01s | elapsed 0m11s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.800      0.844      0.236      317       12
+MCL                     0.671      0.750      0.132      318       12
+Medial Meniscus         0.742      0.600      0.287      330       12
+Lateral Meniscus        0.756      0.844      0.192      309       12
+Medial OA               0.844      0.667      0.279      270       12
+Lateral OA              0.852      0.800      0.197      244       12
+PF OA                   0.724      0.594      0.234      295       12
+Effusion                0.922      0.943      0.311      213       12
+Synovitis               0.723      0.833      0.218       95       12
+Baker's                 0.736      0.852      0.252      185       12
+Contusion               0.797      0.704      0.229      228       12
+Fracture                0.794      0.741      0.149      148       12
+MACRO                   0.780      0.764      0.226
+17:55:24 INFO   fold 0 ep 19 step 20/46 | loss 0.3349 | lr 8.80e-05 | gnorm 0.749 | 3154 samples/s | gpu mem 0.26 GB
+17:55:25 INFO   fold 0 ep 19 step 40/46 | loss 0.3048 | lr 8.16e-05 | gnorm 0.557 | 3518 samples/s | gpu mem 0.26 GB
+17:55:25 INFO [fold 0] epoch 19: train loss 0.3334 | val loss 0.4725 | macro AUC llm 0.7751 | gold 0.7156 | pred std 0.2293 | 0m01s | elapsed 0m12s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.784      0.812      0.187      317       12
+MCL                     0.680      0.750      0.140      318       12
+Medial Meniscus         0.737      0.571      0.295      330       12
+Lateral Meniscus        0.739      0.781      0.174      309       12
+Medial OA               0.843      0.778      0.305      270       12
+Lateral OA              0.821      0.350      0.205      244       12
+PF OA                   0.715      0.656      0.243      295       12
+Effusion                0.928      0.971      0.319      213       12
+Synovitis               0.719      0.806      0.248       95       12
+Baker's                 0.745      0.852      0.259      185       12
+Contusion               0.788      0.667      0.212      228       12
+Fracture                0.803      0.593      0.164      148       12
+MACRO                   0.775      0.716      0.229
+17:55:25 INFO   fold 0 ep 20 step 20/46 | loss 0.3101 | lr 7.36e-05 | gnorm 1.265 | 3095 samples/s | gpu mem 0.26 GB
+17:55:25 INFO   fold 0 ep 20 step 40/46 | loss 0.3455 | lr 6.76e-05 | gnorm 0.828 | 3494 samples/s | gpu mem 0.26 GB
+17:55:25 INFO [fold 0] epoch 20: train loss 0.3245 | val loss 0.4748 | macro AUC llm 0.7806 | gold 0.7535 | pred std 0.2451 | 0m01s | elapsed 0m12s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.786      0.938      0.232      317       12
+MCL                     0.670      0.500      0.136      318       12
+Medial Meniscus         0.741      0.714      0.298      330       12
+Lateral Meniscus        0.757      0.812      0.213      309       12
+Medial OA               0.845      0.704      0.314      270       12
+Lateral OA              0.843      0.700      0.242      244       12
+PF OA                   0.730      0.562      0.283      295       12
+Effusion                0.926      1.000      0.308      213       12
+Synovitis               0.745      0.778      0.255       95       12
+Baker's                 0.742      0.815      0.252      185       12
+Contusion               0.795      0.741      0.220      228       12
+Fracture                0.787      0.778      0.188      148       12
+MACRO                   0.781      0.753      0.245
+17:55:25 INFO [fold 0] early stopping at epoch 20 (no improvement for 8 epochs)
+17:55:25 INFO [fold 0] best epoch 12 | macro AUC llm 0.7819 | gold 0.7136 | checkpoint /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold0/best.pt | OOF /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold0/oof.csv
+17:55:25 INFO [fold 1] train 1502 / val 368 studies (gold in val: 10) | 2.84M params | 46 steps/epoch x 30 epochs | mirror_aug 0.0
+17:55:26 INFO   fold 1 ep 0 step 20/46 | loss 0.5583 | lr 1.37e-04 | gnorm 0.559 | 2409 samples/s | gpu mem 0.26 GB
+17:55:26 INFO   fold 1 ep 0 step 40/46 | loss 0.6008 | lr 2.67e-04 | gnorm 0.761 | 3422 samples/s | gpu mem 0.26 GB
+17:55:26 INFO [fold 1] epoch 0: train loss 0.5640 | val loss 0.5342 | macro AUC llm 0.6640 | gold 0.7062 | pred std 0.0061 | 0m01s | elapsed 0m01s, ETA 0m19s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.639      0.375      0.003      320       10
+MCL                     0.544      0.111      0.001      325       10
+Medial Meniscus         0.711      0.833      0.011      334       10
+Lateral Meniscus        0.571      0.750      0.005      319       10
+Medial OA               0.817      1.000      0.011      282       10
+Lateral OA              0.730      0.762      0.005      251       10
+PF OA                   0.701      0.917      0.011      286       10
+Effusion                0.821      0.583      0.005      216       10
+Synovitis               0.710      0.750      0.008       94       10
+Baker's                 0.676      0.857      0.009      176       10
+Contusion               0.518      0.917      0.003      251       10
+Fracture                0.530      0.619      0.002      138       10
+MACRO                   0.664      0.706      0.006
+17:55:26 WARNING !!! COLLAPSE WARNING: mean per-label std of val predictions is 0.0061 (< 0.02): predictions are collapsing to the base rate
+17:55:26 INFO   fold 1 ep 1 step 20/46 | loss 0.5893 | lr 3.00e-04 | gnorm 0.603 | 3167 samples/s | gpu mem 0.26 GB
+17:55:26 INFO   fold 1 ep 1 step 40/46 | loss 0.5175 | lr 2.99e-04 | gnorm 0.555 | 3424 samples/s | gpu mem 0.26 GB
+17:55:27 INFO [fold 1] epoch 1: train loss 0.5240 | val loss 0.5250 | macro AUC llm 0.7031 | gold 0.6896 | pred std 0.0200 | 0m01s | elapsed 0m01s, ETA 0m17s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.519      0.583      0.011      320       10
+MCL                     0.601      0.222      0.003      325       10
+Medial Meniscus         0.713      0.917      0.017      334       10
+Lateral Meniscus        0.587      0.750      0.012      319       10
+Medial OA               0.838      1.000      0.043      282       10
+Lateral OA              0.781      0.714      0.028      251       10
+PF OA                   0.724      0.917      0.037      286       10
+Effusion                0.865      0.583      0.017      216       10
+Synovitis               0.719      0.750      0.017       94       10
+Baker's                 0.672      0.857      0.043      176       10
+Contusion               0.602      0.458      0.005      251       10
+Fracture                0.816      0.524      0.007      138       10
+MACRO                   0.703      0.690      0.020
+17:55:27 INFO   fold 1 ep 2 step 20/46 | loss 0.4151 | lr 2.98e-04 | gnorm 0.636 | 3185 samples/s | gpu mem 0.26 GB
+17:55:27 INFO   fold 1 ep 2 step 40/46 | loss 0.5473 | lr 2.97e-04 | gnorm 0.793 | 3550 samples/s | gpu mem 0.26 GB
+17:55:27 INFO [fold 1] epoch 2: train loss 0.5082 | val loss 0.4797 | macro AUC llm 0.7335 | gold 0.7063 | pred std 0.1207 | 0m01s | elapsed 0m02s, ETA 0m16s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.691      0.417      0.058      320       10
+MCL                     0.615      0.333      0.035      325       10
+Medial Meniscus         0.704      0.917      0.157      334       10
+Lateral Meniscus        0.630      0.708      0.099      319       10
+Medial OA               0.864      1.000      0.176      282       10
+Lateral OA              0.818      0.714      0.170      251       10
+PF OA                   0.745      0.917      0.132      286       10
+Effusion                0.847      0.625      0.214      216       10
+Synovitis               0.726      0.917      0.162       94       10
+Baker's                 0.696      0.857      0.131      176       10
+Contusion               0.576      0.500      0.037      251       10
+Fracture                0.889      0.571      0.078      138       10
+MACRO                   0.733      0.706      0.121
+17:55:27 INFO   fold 1 ep 3 step 20/46 | loss 0.4900 | lr 2.95e-04 | gnorm 0.521 | 3223 samples/s | gpu mem 0.26 GB
+17:55:28 INFO   fold 1 ep 3 step 40/46 | loss 0.5421 | lr 2.93e-04 | gnorm 0.937 | 3557 samples/s | gpu mem 0.26 GB
+17:55:28 INFO [fold 1] epoch 3: train loss 0.4871 | val loss 0.4755 | macro AUC llm 0.7705 | gold 0.6842 | pred std 0.1068 | 0m01s | elapsed 0m02s, ETA 0m15s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.711      0.417      0.087      320       10
+MCL                     0.722      0.222      0.026      325       10
+Medial Meniscus         0.710      0.917      0.159      334       10
+Lateral Meniscus        0.640      0.667      0.096      319       10
+Medial OA               0.874      1.000      0.167      282       10
+Lateral OA              0.838      0.810      0.109      251       10
+PF OA                   0.755      0.958      0.082      286       10
+Effusion                0.891      0.625      0.212      216       10
+Synovitis               0.771      0.875      0.089       94       10
+Baker's                 0.681      0.857      0.155      176       10
+Contusion               0.737      0.292      0.055      251       10
+Fracture                0.917      0.571      0.044      138       10
+MACRO                   0.771      0.684      0.107
+17:55:28 INFO   fold 1 ep 4 step 20/46 | loss 0.4616 | lr 2.90e-04 | gnorm 0.830 | 3125 samples/s | gpu mem 0.26 GB
+17:55:28 INFO   fold 1 ep 4 step 40/46 | loss 0.5222 | lr 2.87e-04 | gnorm 0.661 | 3461 samples/s | gpu mem 0.26 GB
+17:55:28 INFO [fold 1] epoch 4: train loss 0.4795 | val loss 0.4586 | macro AUC llm 0.7807 | gold 0.7260 | pred std 0.1184 | 0m01s | elapsed 0m03s, ETA 0m15s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.744      0.542      0.084      320       10
+MCL                     0.772      0.444      0.038      325       10
+Medial Meniscus         0.713      0.875      0.102      334       10
+Lateral Meniscus        0.658      0.750      0.087      319       10
+Medial OA               0.868      1.000      0.194      282       10
+Lateral OA              0.841      0.810      0.152      251       10
+PF OA                   0.753      0.958      0.155      286       10
+Effusion                0.910      0.667      0.197      216       10
+Synovitis               0.768      0.917      0.114       94       10
+Baker's                 0.678      0.857      0.138      176       10
+Contusion               0.730      0.417      0.074      251       10
+Fracture                0.932      0.476      0.085      138       10
+MACRO                   0.781      0.726      0.118
+17:55:29 INFO   fold 1 ep 5 step 20/46 | loss 0.4693 | lr 2.83e-04 | gnorm 0.694 | 3130 samples/s | gpu mem 0.26 GB
+17:55:29 INFO   fold 1 ep 5 step 40/46 | loss 0.4376 | lr 2.80e-04 | gnorm 0.444 | 3543 samples/s | gpu mem 0.26 GB
+17:55:29 INFO [fold 1] epoch 5: train loss 0.4683 | val loss 0.4583 | macro AUC llm 0.7745 | gold 0.7363 | pred std 0.1349 | 0m01s | elapsed 0m03s, ETA 0m14s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.695      0.708      0.056      320       10
+MCL                     0.681      0.222      0.026      325       10
+Medial Meniscus         0.719      0.875      0.158      334       10
+Lateral Meniscus        0.656      0.833      0.112      319       10
+Medial OA               0.872      1.000      0.241      282       10
+Lateral OA              0.849      0.810      0.177      251       10
+PF OA                   0.763      0.958      0.197      286       10
+Effusion                0.929      0.667      0.245      216       10
+Synovitis               0.799      0.917      0.140       94       10
+Baker's                 0.673      0.857      0.147      176       10
+Contusion               0.733      0.417      0.063      251       10
+Fracture                0.925      0.571      0.057      138       10
+MACRO                   0.774      0.736      0.135
+17:55:29 INFO   fold 1 ep 6 step 20/46 | loss 0.4169 | lr 2.75e-04 | gnorm 0.397 | 3189 samples/s | gpu mem 0.26 GB
+17:55:29 INFO   fold 1 ep 6 step 40/46 | loss 0.4506 | lr 2.71e-04 | gnorm 0.693 | 3503 samples/s | gpu mem 0.26 GB
+17:55:29 INFO [fold 1] epoch 6: train loss 0.4625 | val loss 0.4718 | macro AUC llm 0.7547 | gold 0.7411 | pred std 0.1344 | 0m01s | elapsed 0m04s, ETA 0m13s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.662      0.583      0.036      320       10
+MCL                     0.643      0.333      0.017      325       10
+Medial Meniscus         0.719      0.875      0.194      334       10
+Lateral Meniscus        0.624      0.833      0.089      319       10
+Medial OA               0.866      1.000      0.234      282       10
+Lateral OA              0.848      0.810      0.160      251       10
+PF OA                   0.764      0.958      0.213      286       10
+Effusion                0.918      0.667      0.229      216       10
+Synovitis               0.801      0.958      0.175       94       10
+Baker's                 0.668      0.857      0.189      176       10
+Contusion               0.673      0.542      0.039      251       10
+Fracture                0.870      0.476      0.040      138       10
+MACRO                   0.755      0.741      0.134
+17:55:30 INFO   fold 1 ep 7 step 20/46 | loss 0.4880 | lr 2.65e-04 | gnorm 0.585 | 3071 samples/s | gpu mem 0.26 GB
+17:55:30 INFO   fold 1 ep 7 step 40/46 | loss 0.4069 | lr 2.60e-04 | gnorm 0.513 | 3464 samples/s | gpu mem 0.26 GB
+17:55:30 INFO [fold 1] epoch 7: train loss 0.4533 | val loss 0.4528 | macro AUC llm 0.7871 | gold 0.7573 | pred std 0.1497 | 0m01s | elapsed 0m05s, ETA 0m13s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.742      0.833      0.124      320       10
+MCL                     0.760      0.444      0.045      325       10
+Medial Meniscus         0.732      0.875      0.161      334       10
+Lateral Meniscus        0.653      0.792      0.099      319       10
+Medial OA               0.860      1.000      0.217      282       10
+Lateral OA              0.843      0.810      0.146      251       10
+PF OA                   0.766      0.958      0.175      286       10
+Effusion                0.926      0.667      0.292      216       10
+Synovitis               0.809      0.917      0.195       94       10
+Baker's                 0.666      0.857      0.108      176       10
+Contusion               0.771      0.458      0.143      251       10
+Fracture                0.918      0.476      0.090      138       10
+MACRO                   0.787      0.757      0.150
+17:55:30 INFO   fold 1 ep 8 step 20/46 | loss 0.4365 | lr 2.54e-04 | gnorm 0.635 | 3046 samples/s | gpu mem 0.26 GB
+17:55:30 INFO   fold 1 ep 8 step 40/46 | loss 0.4615 | lr 2.49e-04 | gnorm 0.457 | 3423 samples/s | gpu mem 0.26 GB
+17:55:31 INFO [fold 1] epoch 8: train loss 0.4465 | val loss 0.4502 | macro AUC llm 0.7902 | gold 0.7664 | pred std 0.1445 | 0m01s | elapsed 0m05s, ETA 0m12s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.723      0.792      0.102      320       10
+MCL                     0.726      0.333      0.024      325       10
+Medial Meniscus         0.739      0.875      0.172      334       10
+Lateral Meniscus        0.658      0.792      0.108      319       10
+Medial OA               0.858      1.000      0.256      282       10
+Lateral OA              0.849      0.857      0.161      251       10
+PF OA                   0.776      0.958      0.179      286       10
+Effusion                0.926      0.667      0.237      216       10
+Synovitis               0.830      0.917      0.157       94       10
+Baker's                 0.690      0.905      0.161      176       10
+Contusion               0.776      0.625      0.097      251       10
+Fracture                0.931      0.476      0.079      138       10
+MACRO                   0.790      0.766      0.145
+17:55:31 INFO   fold 1 ep 9 step 20/46 | loss 0.4753 | lr 2.42e-04 | gnorm 0.716 | 3132 samples/s | gpu mem 0.26 GB
+17:55:31 INFO   fold 1 ep 9 step 40/46 | loss 0.4695 | lr 2.36e-04 | gnorm 0.912 | 3416 samples/s | gpu mem 0.26 GB
+17:55:31 INFO [fold 1] epoch 9: train loss 0.4438 | val loss 0.4478 | macro AUC llm 0.7848 | gold 0.7483 | pred std 0.1753 | 0m01s | elapsed 0m06s, ETA 0m11s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.743      0.750      0.094      320       10
+MCL                     0.709      0.444      0.033      325       10
+Medial Meniscus         0.731      0.875      0.228      334       10
+Lateral Meniscus        0.658      0.750      0.134      319       10
+Medial OA               0.863      1.000      0.283      282       10
+Lateral OA              0.854      0.857      0.210      251       10
+PF OA                   0.781      0.958      0.267      286       10
+Effusion                0.932      0.625      0.274      216       10
+Synovitis               0.813      0.917      0.201       94       10
+Baker's                 0.695      0.905      0.217      176       10
+Contusion               0.730      0.708      0.095      251       10
+Fracture                0.910      0.190      0.067      138       10
+MACRO                   0.785      0.748      0.175
+17:55:31 INFO   fold 1 ep 10 step 20/46 | loss 0.4588 | lr 2.28e-04 | gnorm 0.803 | 2978 samples/s | gpu mem 0.26 GB
+17:55:31 INFO   fold 1 ep 10 step 40/46 | loss 0.4378 | lr 2.22e-04 | gnorm 0.847 | 3471 samples/s | gpu mem 0.26 GB
+17:55:32 INFO [fold 1] epoch 10: train loss 0.4345 | val loss 0.4730 | macro AUC llm 0.7936 | gold 0.6644 | pred std 0.1504 | 0m01s | elapsed 0m06s, ETA 0m11s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.777      0.500      0.069      320       10
+MCL                     0.744      0.222      0.025      325       10
+Medial Meniscus         0.729      0.875      0.197      334       10
+Lateral Meniscus        0.644      0.750      0.117      319       10
+Medial OA               0.855      1.000      0.281      282       10
+Lateral OA              0.861      0.857      0.167      251       10
+PF OA                   0.769      1.000      0.194      286       10
+Effusion                0.931      0.625      0.251      216       10
+Synovitis               0.808      0.792      0.145       94       10
+Baker's                 0.695      0.857      0.197      176       10
+Contusion               0.791      0.208      0.084      251       10
+Fracture                0.917      0.286      0.079      138       10
+MACRO                   0.794      0.664      0.150
+17:55:32 INFO   fold 1 ep 11 step 20/46 | loss 0.4140 | lr 2.14e-04 | gnorm 0.946 | 3066 samples/s | gpu mem 0.26 GB
+17:55:32 INFO   fold 1 ep 11 step 40/46 | loss 0.4403 | lr 2.07e-04 | gnorm 1.069 | 3447 samples/s | gpu mem 0.26 GB
+17:55:32 INFO [fold 1] epoch 11: train loss 0.4326 | val loss 0.4465 | macro AUC llm 0.7964 | gold 0.8090 | pred std 0.1803 | 0m01s | elapsed 0m07s, ETA 0m10s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.791      0.833      0.141      320       10
+MCL                     0.723      1.000      0.050      325       10
+Medial Meniscus         0.738      0.833      0.175      334       10
+Lateral Meniscus        0.665      0.875      0.131      319       10
+Medial OA               0.845      1.000      0.280      282       10
+Lateral OA              0.852      0.905      0.236      251       10
+PF OA                   0.773      1.000      0.226      286       10
+Effusion                0.935      0.625      0.269      216       10
+Synovitis               0.845      0.917      0.187       94       10
+Baker's                 0.693      0.857      0.164      176       10
+Contusion               0.771      0.625      0.164      251       10
+Fracture                0.926      0.238      0.140      138       10
+MACRO                   0.796      0.809      0.180
+17:55:32 INFO   fold 1 ep 12 step 20/46 | loss 0.3874 | lr 1.99e-04 | gnorm 0.727 | 3044 samples/s | gpu mem 0.26 GB
+17:55:33 INFO   fold 1 ep 12 step 40/46 | loss 0.3563 | lr 1.92e-04 | gnorm 0.494 | 3399 samples/s | gpu mem 0.26 GB
+17:55:33 INFO [fold 1] epoch 12: train loss 0.4253 | val loss 0.4439 | macro AUC llm 0.7905 | gold 0.7655 | pred std 0.1828 | 0m01s | elapsed 0m07s, ETA 0m10s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.784      0.833      0.157      320       10
+MCL                     0.688      0.889      0.049      325       10
+Medial Meniscus         0.736      0.875      0.199      334       10
+Lateral Meniscus        0.675      0.833      0.129      319       10
+Medial OA               0.847      1.000      0.295      282       10
+Lateral OA              0.863      0.857      0.224      251       10
+PF OA                   0.782      0.958      0.222      286       10
+Effusion                0.939      0.583      0.259      216       10
+Synovitis               0.839      0.833      0.192       94       10
+Baker's                 0.700      0.857      0.166      176       10
+Contusion               0.733      0.667      0.154      251       10
+Fracture                0.899      0.000      0.147      138       10
+MACRO                   0.790      0.766      0.183
+17:55:33 INFO   fold 1 ep 13 step 20/46 | loss 0.3639 | lr 1.83e-04 | gnorm 0.762 | 3126 samples/s | gpu mem 0.26 GB
+17:55:33 INFO   fold 1 ep 13 step 40/46 | loss 0.4103 | lr 1.76e-04 | gnorm 0.630 | 3376 samples/s | gpu mem 0.26 GB
+17:55:33 INFO [fold 1] epoch 13: train loss 0.4158 | val loss 0.4390 | macro AUC llm 0.7951 | gold 0.7817 | pred std 0.1907 | 0m01s | elapsed 0m08s, ETA 0m09s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.784      0.750      0.153      320       10
+MCL                     0.756      1.000      0.068      325       10
+Medial Meniscus         0.741      0.792      0.207      334       10
+Lateral Meniscus        0.678      0.875      0.172      319       10
+Medial OA               0.863      1.000      0.276      282       10
+Lateral OA              0.858      0.857      0.198      251       10
+PF OA                   0.789      0.958      0.233      286       10
+Effusion                0.941      0.583      0.294      216       10
+Synovitis               0.842      0.875      0.203       94       10
+Baker's                 0.683      0.857      0.204      176       10
+Contusion               0.720      0.833      0.154      251       10
+Fracture                0.886      0.000      0.127      138       10
+MACRO                   0.795      0.782      0.191
+17:55:34 INFO   fold 1 ep 14 step 20/46 | loss 0.4461 | lr 1.67e-04 | gnorm 0.863 | 2933 samples/s | gpu mem 0.26 GB
+17:55:34 INFO   fold 1 ep 14 step 40/46 | loss 0.3918 | lr 1.60e-04 | gnorm 0.861 | 3349 samples/s | gpu mem 0.26 GB
+17:55:34 INFO [fold 1] epoch 14: train loss 0.4034 | val loss 0.4427 | macro AUC llm 0.7961 | gold 0.7140 | pred std 0.1883 | 0m01s | elapsed 0m09s, ETA 0m09s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.800      0.583      0.139      320       10
+MCL                     0.717      0.556      0.025      325       10
+Medial Meniscus         0.750      0.750      0.220      334       10
+Lateral Meniscus        0.685      0.833      0.128      319       10
+Medial OA               0.855      1.000      0.306      282       10
+Lateral OA              0.853      0.857      0.243      251       10
+PF OA                   0.790      0.958      0.247      286       10
+Effusion                0.936      0.583      0.305      216       10
+Synovitis               0.840      0.833      0.216       94       10
+Baker's                 0.695      0.857      0.197      176       10
+Contusion               0.741      0.708      0.127      251       10
+Fracture                0.892      0.048      0.105      138       10
+MACRO                   0.796      0.714      0.188
+17:55:34 INFO   fold 1 ep 15 step 20/46 | loss 0.3616 | lr 1.51e-04 | gnorm 0.577 | 3032 samples/s | gpu mem 0.26 GB
+17:55:34 INFO   fold 1 ep 15 step 40/46 | loss 0.3912 | lr 1.44e-04 | gnorm 0.744 | 3313 samples/s | gpu mem 0.26 GB
+17:55:34 INFO [fold 1] epoch 15: train loss 0.3983 | val loss 0.4464 | macro AUC llm 0.7865 | gold 0.7783 | pred std 0.1704 | 0m01s | elapsed 0m09s, ETA 0m08s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.767      0.667      0.154      320       10
+MCL                     0.687      1.000      0.068      325       10
+Medial Meniscus         0.747      0.833      0.226      334       10
+Lateral Meniscus        0.682      0.792      0.123      319       10
+Medial OA               0.846      1.000      0.237      282       10
+Lateral OA              0.841      0.857      0.149      251       10
+PF OA                   0.788      0.958      0.183      286       10
+Effusion                0.941      0.583      0.292      216       10
+Synovitis               0.842      0.917      0.194       94       10
+Baker's                 0.690      0.857      0.166      176       10
+Contusion               0.720      0.875      0.143      251       10
+Fracture                0.886      0.000      0.109      138       10
+MACRO                   0.787      0.778      0.170
+17:55:35 INFO   fold 1 ep 16 step 20/46 | loss 0.4019 | lr 1.35e-04 | gnorm 1.220 | 3092 samples/s | gpu mem 0.26 GB
+17:55:35 INFO   fold 1 ep 16 step 40/46 | loss 0.3456 | lr 1.28e-04 | gnorm 0.646 | 3642 samples/s | gpu mem 0.26 GB
+17:55:35 INFO [fold 1] epoch 16: train loss 0.3874 | val loss 0.4449 | macro AUC llm 0.7873 | gold 0.7447 | pred std 0.2165 | 0m01s | elapsed 0m10s, ETA 0m07s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.776      0.708      0.196      320       10
+MCL                     0.658      0.889      0.104      325       10
+Medial Meniscus         0.749      0.667      0.222      334       10
+Lateral Meniscus        0.703      0.792      0.175      319       10
+Medial OA               0.846      1.000      0.311      282       10
+Lateral OA              0.847      0.857      0.251      251       10
+PF OA                   0.792      0.958      0.284      286       10
+Effusion                0.943      0.583      0.313      216       10
+Synovitis               0.839      0.875      0.257       94       10
+Baker's                 0.731      0.857      0.200      176       10
+Contusion               0.656      0.750      0.156      251       10
+Fracture                0.908      0.000      0.130      138       10
+MACRO                   0.787      0.745      0.217
+17:55:35 INFO   fold 1 ep 17 step 20/46 | loss 0.3326 | lr 1.19e-04 | gnorm 0.788 | 3108 samples/s | gpu mem 0.26 GB
+17:55:35 INFO   fold 1 ep 17 step 40/46 | loss 0.3893 | lr 1.12e-04 | gnorm 0.723 | 3321 samples/s | gpu mem 0.26 GB
+17:55:36 INFO [fold 1] epoch 17: train loss 0.3760 | val loss 0.4540 | macro AUC llm 0.7924 | gold 0.7436 | pred std 0.2101 | 0m01s | elapsed 0m10s, ETA 0m07s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.781      0.667      0.206      320       10
+MCL                     0.744      1.000      0.092      325       10
+Medial Meniscus         0.748      0.792      0.248      334       10
+Lateral Meniscus        0.690      0.875      0.184      319       10
+Medial OA               0.844      1.000      0.287      282       10
+Lateral OA              0.841      0.857      0.205      251       10
+PF OA                   0.777      0.958      0.241      286       10
+Effusion                0.939      0.583      0.289      216       10
+Synovitis               0.801      0.708      0.199       94       10
+Baker's                 0.711      0.857      0.243      176       10
+Contusion               0.721      0.625      0.181      251       10
+Fracture                0.913      0.000      0.146      138       10
+MACRO                   0.792      0.744      0.210
+17:55:36 INFO   fold 1 ep 18 step 20/46 | loss 0.3227 | lr 1.03e-04 | gnorm 0.466 | 3112 samples/s | gpu mem 0.26 GB
+17:55:36 INFO   fold 1 ep 18 step 40/46 | loss 0.2942 | lr 9.65e-05 | gnorm 0.708 | 3504 samples/s | gpu mem 0.26 GB
+17:55:36 INFO [fold 1] epoch 18: train loss 0.3672 | val loss 0.4458 | macro AUC llm 0.7984 | gold 0.7348 | pred std 0.2075 | 0m01s | elapsed 0m11s, ETA 0m06s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.781      0.750      0.184      320       10
+MCL                     0.701      0.889      0.045      325       10
+Medial Meniscus         0.750      0.667      0.248      334       10
+Lateral Meniscus        0.700      0.833      0.172      319       10
+Medial OA               0.853      1.000      0.315      282       10
+Lateral OA              0.854      0.905      0.236      251       10
+PF OA                   0.804      0.917      0.263      286       10
+Effusion                0.941      0.542      0.311      216       10
+Synovitis               0.838      0.792      0.259       94       10
+Baker's                 0.720      0.857      0.209      176       10
+Contusion               0.713      0.667      0.133      251       10
+Fracture                0.927      0.000      0.115      138       10
+MACRO                   0.798      0.735      0.207
+17:55:36 INFO   fold 1 ep 19 step 20/46 | loss 0.3493 | lr 8.80e-05 | gnorm 0.786 | 3114 samples/s | gpu mem 0.26 GB
+17:55:37 INFO   fold 1 ep 19 step 40/46 | loss 0.3282 | lr 8.16e-05 | gnorm 1.120 | 3335 samples/s | gpu mem 0.26 GB
+17:55:37 INFO [fold 1] epoch 19: train loss 0.3562 | val loss 0.4552 | macro AUC llm 0.7858 | gold 0.7391 | pred std 0.2132 | 0m01s | elapsed 0m11s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.773      0.792      0.184      320       10
+MCL                     0.704      1.000      0.093      325       10
+Medial Meniscus         0.739      0.583      0.256      334       10
+Lateral Meniscus        0.694      0.833      0.164      319       10
+Medial OA               0.848      1.000      0.297      282       10
+Lateral OA              0.855      0.857      0.233      251       10
+PF OA                   0.798      0.917      0.266      286       10
+Effusion                0.941      0.583      0.316      216       10
+Synovitis               0.800      0.792      0.241       94       10
+Baker's                 0.708      0.762      0.207      176       10
+Contusion               0.684      0.750      0.155      251       10
+Fracture                0.883      0.000      0.147      138       10
+MACRO                   0.786      0.739      0.213
+17:55:37 INFO   fold 1 ep 20 step 20/46 | loss 0.3984 | lr 7.36e-05 | gnorm 1.011 | 3045 samples/s | gpu mem 0.26 GB
+17:55:37 INFO   fold 1 ep 20 step 40/46 | loss 0.3622 | lr 6.76e-05 | gnorm 0.909 | 3451 samples/s | gpu mem 0.26 GB
+17:55:37 INFO [fold 1] epoch 20: train loss 0.3454 | val loss 0.4534 | macro AUC llm 0.7842 | gold 0.7436 | pred std 0.2126 | 0m01s | elapsed 0m12s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.776      0.750      0.188      320       10
+MCL                     0.695      1.000      0.084      325       10
+Medial Meniscus         0.742      0.750      0.269      334       10
+Lateral Meniscus        0.702      0.833      0.172      319       10
+Medial OA               0.852      1.000      0.309      282       10
+Lateral OA              0.852      0.905      0.250      251       10
+PF OA                   0.797      0.917      0.263      286       10
+Effusion                0.943      0.542      0.299      216       10
+Synovitis               0.794      0.667      0.252       94       10
+Baker's                 0.711      0.810      0.216      176       10
+Contusion               0.673      0.750      0.142      251       10
+Fracture                0.873      0.000      0.105      138       10
+MACRO                   0.784      0.744      0.213
+17:55:37 INFO   fold 1 ep 21 step 20/46 | loss 0.2965 | lr 6.01e-05 | gnorm 0.732 | 3148 samples/s | gpu mem 0.26 GB
+17:55:38 INFO   fold 1 ep 21 step 40/46 | loss 0.2957 | lr 5.45e-05 | gnorm 0.823 | 3448 samples/s | gpu mem 0.26 GB
+17:55:38 INFO [fold 1] epoch 21: train loss 0.3360 | val loss 0.4587 | macro AUC llm 0.7882 | gold 0.7376 | pred std 0.2131 | 0m01s | elapsed 0m12s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.801      0.583      0.186      320       10
+MCL                     0.715      1.000      0.063      325       10
+Medial Meniscus         0.750      0.750      0.282      334       10
+Lateral Meniscus        0.695      0.792      0.177      319       10
+Medial OA               0.842      1.000      0.296      282       10
+Lateral OA              0.846      0.905      0.221      251       10
+PF OA                   0.796      0.917      0.267      286       10
+Effusion                0.939      0.583      0.313      216       10
+Synovitis               0.793      0.708      0.250       94       10
+Baker's                 0.714      0.857      0.235      176       10
+Contusion               0.689      0.708      0.142      251       10
+Fracture                0.878      0.048      0.125      138       10
+MACRO                   0.788      0.738      0.213
+17:55:38 INFO   fold 1 ep 22 step 20/46 | loss 0.2825 | lr 4.76e-05 | gnorm 1.436 | 3139 samples/s | gpu mem 0.26 GB
+17:55:38 INFO   fold 1 ep 22 step 40/46 | loss 0.3362 | lr 4.26e-05 | gnorm 1.044 | 3458 samples/s | gpu mem 0.26 GB
+17:55:38 INFO [fold 1] epoch 22: train loss 0.3307 | val loss 0.4655 | macro AUC llm 0.7838 | gold 0.7197 | pred std 0.2190 | 0m01s | elapsed 0m13s, ETA 0m04s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.795      0.708      0.207      320       10
+MCL                     0.741      1.000      0.109      325       10
+Medial Meniscus         0.730      0.667      0.263      334       10
+Lateral Meniscus        0.690      0.667      0.167      319       10
+Medial OA               0.847      1.000      0.293      282       10
+Lateral OA              0.840      0.905      0.219      251       10
+PF OA                   0.791      0.917      0.264      286       10
+Effusion                0.941      0.542      0.311      216       10
+Synovitis               0.756      0.708      0.226       94       10
+Baker's                 0.713      0.810      0.243      176       10
+Contusion               0.701      0.667      0.181      251       10
+Fracture                0.860      0.048      0.144      138       10
+MACRO                   0.784      0.720      0.219
+17:55:39 INFO   fold 1 ep 23 step 20/46 | loss 0.2859 | lr 3.64e-05 | gnorm 0.802 | 3152 samples/s | gpu mem 0.26 GB
+17:55:39 INFO   fold 1 ep 23 step 40/46 | loss 0.3437 | lr 3.19e-05 | gnorm 0.873 | 3459 samples/s | gpu mem 0.26 GB
+17:55:39 INFO [fold 1] epoch 23: train loss 0.3212 | val loss 0.4609 | macro AUC llm 0.7790 | gold 0.7440 | pred std 0.2144 | 0m01s | elapsed 0m14s, ETA 0m03s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.784      0.792      0.187      320       10
+MCL                     0.664      1.000      0.083      325       10
+Medial Meniscus         0.737      0.667      0.280      334       10
+Lateral Meniscus        0.702      0.792      0.161      319       10
+Medial OA               0.853      1.000      0.300      282       10
+Lateral OA              0.854      0.905      0.203      251       10
+PF OA                   0.808      0.917      0.262      286       10
+Effusion                0.938      0.500      0.302      216       10
+Synovitis               0.794      0.750      0.254       94       10
+Baker's                 0.722      0.810      0.267      176       10
+Contusion               0.679      0.750      0.157      251       10
+Fracture                0.814      0.048      0.117      138       10
+MACRO                   0.779      0.744      0.214
+17:55:39 INFO   fold 1 ep 24 step 20/46 | loss 0.3394 | lr 2.64e-05 | gnorm 1.149 | 3100 samples/s | gpu mem 0.26 GB
+17:55:39 INFO   fold 1 ep 24 step 40/46 | loss 0.3388 | lr 2.26e-05 | gnorm 0.830 | 3474 samples/s | gpu mem 0.26 GB
+17:55:39 INFO [fold 1] epoch 24: train loss 0.3151 | val loss 0.4625 | macro AUC llm 0.7878 | gold 0.7244 | pred std 0.2294 | 0m01s | elapsed 0m14s, ETA 0m03s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.799      0.708      0.188      320       10
+MCL                     0.701      0.889      0.095      325       10
+Medial Meniscus         0.744      0.708      0.297      334       10
+Lateral Meniscus        0.713      0.792      0.190      319       10
+Medial OA               0.851      1.000      0.325      282       10
+Lateral OA              0.853      0.905      0.249      251       10
+PF OA                   0.797      0.917      0.280      286       10
+Effusion                0.939      0.500      0.310      216       10
+Synovitis               0.781      0.708      0.252       94       10
+Baker's                 0.716      0.810      0.271      176       10
+Contusion               0.691      0.708      0.158      251       10
+Fracture                0.868      0.048      0.139      138       10
+MACRO                   0.788      0.724      0.229
+17:55:40 INFO   fold 1 ep 25 step 20/46 | loss 0.3529 | lr 1.80e-05 | gnorm 0.815 | 3128 samples/s | gpu mem 0.26 GB
+17:55:40 INFO   fold 1 ep 25 step 40/46 | loss 0.2976 | lr 1.48e-05 | gnorm 0.828 | 3425 samples/s | gpu mem 0.26 GB
+17:55:40 INFO [fold 1] epoch 25: train loss 0.3098 | val loss 0.4629 | macro AUC llm 0.7839 | gold 0.7331 | pred std 0.2268 | 0m01s | elapsed 0m15s, ETA 0m02s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.793      0.750      0.198      320       10
+MCL                     0.683      1.000      0.091      325       10
+Medial Meniscus         0.733      0.667      0.293      334       10
+Lateral Meniscus        0.713      0.792      0.179      319       10
+Medial OA               0.847      1.000      0.317      282       10
+Lateral OA              0.848      0.905      0.231      251       10
+PF OA                   0.798      0.917      0.273      286       10
+Effusion                0.937      0.500      0.308      216       10
+Synovitis               0.786      0.708      0.256       94       10
+Baker's                 0.712      0.762      0.266      176       10
+Contusion               0.695      0.750      0.167      251       10
+Fracture                0.863      0.048      0.144      138       10
+MACRO                   0.784      0.733      0.227
+17:55:40 INFO   fold 1 ep 26 step 20/46 | loss 0.3192 | lr 1.10e-05 | gnorm 0.883 | 3101 samples/s | gpu mem 0.26 GB
+17:55:40 INFO   fold 1 ep 26 step 40/46 | loss 0.2904 | lr 8.54e-06 | gnorm 1.120 | 3467 samples/s | gpu mem 0.26 GB
+17:55:41 INFO [fold 1] epoch 26: train loss 0.3034 | val loss 0.4640 | macro AUC llm 0.7825 | gold 0.7244 | pred std 0.2236 | 0m01s | elapsed 0m15s, ETA 0m02s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.794      0.750      0.181      320       10
+MCL                     0.676      0.889      0.078      325       10
+Medial Meniscus         0.733      0.708      0.295      334       10
+Lateral Meniscus        0.716      0.792      0.182      319       10
+Medial OA               0.847      1.000      0.317      282       10
+Lateral OA              0.846      0.905      0.234      251       10
+PF OA                   0.798      0.917      0.276      286       10
+Effusion                0.936      0.500      0.309      216       10
+Synovitis               0.788      0.708      0.262       94       10
+Baker's                 0.713      0.810      0.261      176       10
+Contusion               0.686      0.667      0.151      251       10
+Fracture                0.857      0.048      0.138      138       10
+MACRO                   0.783      0.724      0.224
+17:55:41 INFO [fold 1] early stopping at epoch 26 (no improvement for 8 epochs)
+17:55:41 INFO [fold 1] best epoch 18 | macro AUC llm 0.7984 | gold 0.7348 | checkpoint /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold1/best.pt | OOF /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold1/oof.csv
+17:55:41 INFO [fold 2] train 1492 / val 378 studies (gold in val: 12) | 2.84M params | 46 steps/epoch x 30 epochs | mirror_aug 0.0
+17:55:41 INFO   fold 2 ep 0 step 20/46 | loss 0.4855 | lr 1.37e-04 | gnorm 0.399 | 2343 samples/s | gpu mem 0.26 GB
+17:55:41 INFO   fold 2 ep 0 step 40/46 | loss 0.5467 | lr 2.67e-04 | gnorm 0.425 | 3359 samples/s | gpu mem 0.26 GB
+17:55:41 INFO [fold 2] epoch 0: train loss 0.5538 | val loss 0.5316 | macro AUC llm 0.6658 | gold 0.5693 | pred std 0.0071 | 0m01s | elapsed 0m01s, ETA 0m20s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.628      0.594      0.005      320       12
+MCL                     0.530      0.450      0.002      327       12
+Medial Meniscus         0.647      0.429      0.010      330       12
+Lateral Meniscus        0.681      0.743      0.004      324       12
+Medial OA               0.762      0.704      0.013      276       12
+Lateral OA              0.702      0.600      0.009      258       12
+PF OA                   0.692      0.844      0.011      298       12
+Effusion                0.779      0.600      0.010      204       12
+Synovitis               0.694      0.286      0.005       95       12
+Baker's                 0.672      0.650      0.012      181       12
+Contusion               0.465      0.600      0.004      248       12
+Fracture                0.737      0.333      0.002      141       12
+MACRO                   0.666      0.569      0.007
+17:55:41 WARNING !!! COLLAPSE WARNING: mean per-label std of val predictions is 0.0071 (< 0.02): predictions are collapsing to the base rate
+17:55:42 INFO   fold 2 ep 1 step 20/46 | loss 0.5247 | lr 3.00e-04 | gnorm 0.358 | 3132 samples/s | gpu mem 0.26 GB
+17:55:42 INFO   fold 2 ep 1 step 40/46 | loss 0.5773 | lr 2.99e-04 | gnorm 1.199 | 3484 samples/s | gpu mem 0.26 GB
+17:55:42 INFO [fold 2] epoch 1: train loss 0.5141 | val loss 0.5137 | macro AUC llm 0.6999 | gold 0.6052 | pred std 0.0499 | 0m01s | elapsed 0m01s, ETA 0m17s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.612      0.625      0.016      320       12
+MCL                     0.666      0.500      0.007      327       12
+Medial Meniscus         0.689      0.486      0.063      330       12
+Lateral Meniscus        0.676      0.800      0.037      324       12
+Medial OA               0.797      0.815      0.110      276       12
+Lateral OA              0.741      0.550      0.080      258       12
+PF OA                   0.708      0.594      0.078      298       12
+Effusion                0.818      0.550      0.063      204       12
+Synovitis               0.751      0.429      0.056       95       12
+Baker's                 0.676      0.650      0.061      181       12
+Contusion               0.555      0.514      0.006      248       12
+Fracture                0.707      0.750      0.020      141       12
+MACRO                   0.700      0.605      0.050
+17:55:42 INFO   fold 2 ep 2 step 20/46 | loss 0.4728 | lr 2.98e-04 | gnorm 0.481 | 3131 samples/s | gpu mem 0.26 GB
+17:55:42 INFO   fold 2 ep 2 step 40/46 | loss 0.4581 | lr 2.97e-04 | gnorm 0.382 | 3459 samples/s | gpu mem 0.26 GB
+17:55:42 INFO [fold 2] epoch 2: train loss 0.4876 | val loss 0.4919 | macro AUC llm 0.6998 | gold 0.6193 | pred std 0.1211 | 0m01s | elapsed 0m02s, ETA 0m16s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.610      0.562      0.062      320       12
+MCL                     0.520      0.550      0.022      327       12
+Medial Meniscus         0.696      0.543      0.161      330       12
+Lateral Meniscus        0.687      0.800      0.093      324       12
+Medial OA               0.815      0.815      0.197      276       12
+Lateral OA              0.766      0.650      0.131      258       12
+PF OA                   0.732      0.562      0.183      298       12
+Effusion                0.833      0.550      0.192      204       12
+Synovitis               0.752      0.514      0.166       95       12
+Baker's                 0.677      0.650      0.150      181       12
+Contusion               0.512      0.457      0.026      248       12
+Fracture                0.797      0.778      0.070      141       12
+MACRO                   0.700      0.619      0.121
+17:55:43 INFO   fold 2 ep 3 step 20/46 | loss 0.4361 | lr 2.95e-04 | gnorm 0.507 | 3091 samples/s | gpu mem 0.26 GB
+17:55:43 INFO   fold 2 ep 3 step 40/46 | loss 0.4580 | lr 2.93e-04 | gnorm 0.478 | 3406 samples/s | gpu mem 0.26 GB
+17:55:43 INFO [fold 2] epoch 3: train loss 0.4746 | val loss 0.4896 | macro AUC llm 0.7286 | gold 0.6891 | pred std 0.1152 | 0m01s | elapsed 0m02s, ETA 0m15s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.719      0.875      0.071      320       12
+MCL                     0.579      0.850      0.026      327       12
+Medial Meniscus         0.731      0.600      0.128      330       12
+Lateral Meniscus        0.706      0.743      0.082      324       12
+Medial OA               0.811      0.630      0.200      276       12
+Lateral OA              0.755      0.650      0.126      258       12
+PF OA                   0.730      0.469      0.164      298       12
+Effusion                0.871      0.700      0.191      204       12
+Synovitis               0.772      0.686      0.173       95       12
+Baker's                 0.692      0.550      0.128      181       12
+Contusion               0.678      0.629      0.056      248       12
+Fracture                0.700      0.889      0.037      141       12
+MACRO                   0.729      0.689      0.115
+17:55:43 INFO   fold 2 ep 4 step 20/46 | loss 0.4033 | lr 2.90e-04 | gnorm 0.527 | 3085 samples/s | gpu mem 0.26 GB
+17:55:43 INFO   fold 2 ep 4 step 40/46 | loss 0.4851 | lr 2.87e-04 | gnorm 0.459 | 3410 samples/s | gpu mem 0.26 GB
+17:55:44 INFO [fold 2] epoch 4: train loss 0.4690 | val loss 0.4795 | macro AUC llm 0.7436 | gold 0.7071 | pred std 0.1184 | 0m01s | elapsed 0m03s, ETA 0m15s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.702      0.938      0.043      320       12
+MCL                     0.580      0.900      0.021      327       12
+Medial Meniscus         0.732      0.600      0.156      330       12
+Lateral Meniscus        0.726      0.743      0.076      324       12
+Medial OA               0.822      0.630      0.210      276       12
+Lateral OA              0.772      0.500      0.139      258       12
+PF OA                   0.732      0.531      0.167      298       12
+Effusion                0.887      0.800      0.214      204       12
+Synovitis               0.775      0.714      0.160       95       12
+Baker's                 0.702      0.500      0.121      181       12
+Contusion               0.747      0.657      0.062      248       12
+Fracture                0.745      0.972      0.053      141       12
+MACRO                   0.744      0.707      0.118
+17:55:44 INFO   fold 2 ep 5 step 20/46 | loss 0.5196 | lr 2.83e-04 | gnorm 0.595 | 3079 samples/s | gpu mem 0.26 GB
+17:55:44 INFO   fold 2 ep 5 step 40/46 | loss 0.4876 | lr 2.80e-04 | gnorm 0.350 | 3406 samples/s | gpu mem 0.26 GB
+17:55:44 INFO [fold 2] epoch 5: train loss 0.4604 | val loss 0.4659 | macro AUC llm 0.7581 | gold 0.7555 | pred std 0.1478 | 0m01s | elapsed 0m04s, ETA 0m14s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.739      0.844      0.100      320       12
+MCL                     0.717      0.850      0.061      327       12
+Medial Meniscus         0.748      0.629      0.140      330       12
+Lateral Meniscus        0.721      0.800      0.103      324       12
+Medial OA               0.818      0.704      0.209      276       12
+Lateral OA              0.773      0.700      0.173      258       12
+PF OA                   0.732      0.562      0.194      298       12
+Effusion                0.892      0.950      0.252      204       12
+Synovitis               0.778      0.857      0.176       95       12
+Baker's                 0.689      0.650      0.141      181       12
+Contusion               0.780      0.714      0.119      248       12
+Fracture                0.710      0.806      0.105      141       12
+MACRO                   0.758      0.755      0.148
+17:55:44 INFO   fold 2 ep 6 step 20/46 | loss 0.5549 | lr 2.75e-04 | gnorm 0.846 | 3048 samples/s | gpu mem 0.26 GB
+17:55:45 INFO   fold 2 ep 6 step 40/46 | loss 0.4152 | lr 2.71e-04 | gnorm 1.252 | 3411 samples/s | gpu mem 0.26 GB
+17:55:45 INFO [fold 2] epoch 6: train loss 0.4551 | val loss 0.4655 | macro AUC llm 0.7568 | gold 0.7337 | pred std 0.1428 | 0m01s | elapsed 0m04s, ETA 0m14s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.752      0.844      0.109      320       12
+MCL                     0.660      0.850      0.036      327       12
+Medial Meniscus         0.760      0.629      0.182      330       12
+Lateral Meniscus        0.740      0.771      0.105      324       12
+Medial OA               0.826      0.630      0.189      276       12
+Lateral OA              0.765      0.600      0.124      258       12
+PF OA                   0.719      0.531      0.195      298       12
+Effusion                0.899      0.900      0.249      204       12
+Synovitis               0.787      0.914      0.165       95       12
+Baker's                 0.705      0.700      0.153      181       12
+Contusion               0.774      0.686      0.120      248       12
+Fracture                0.694      0.750      0.087      141       12
+MACRO                   0.757      0.734      0.143
+17:55:45 INFO   fold 2 ep 7 step 20/46 | loss 0.4212 | lr 2.65e-04 | gnorm 0.616 | 3025 samples/s | gpu mem 0.26 GB
+17:55:45 INFO   fold 2 ep 7 step 40/46 | loss 0.4824 | lr 2.60e-04 | gnorm 0.681 | 3477 samples/s | gpu mem 0.26 GB
+17:55:45 INFO [fold 2] epoch 7: train loss 0.4446 | val loss 0.4824 | macro AUC llm 0.7510 | gold 0.7575 | pred std 0.1084 | 0m01s | elapsed 0m05s, ETA 0m13s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.756      0.938      0.064      320       12
+MCL                     0.642      0.900      0.021      327       12
+Medial Meniscus         0.751      0.543      0.146      330       12
+Lateral Meniscus        0.696      0.743      0.051      324       12
+Medial OA               0.819      0.667      0.156      276       12
+Lateral OA              0.765      0.600      0.085      258       12
+PF OA                   0.717      0.562      0.145      298       12
+Effusion                0.909      0.900      0.237      204       12
+Synovitis               0.786      0.743      0.155       95       12
+Baker's                 0.696      0.750      0.128      181       12
+Contusion               0.763      0.800      0.072      248       12
+Fracture                0.713      0.944      0.041      141       12
+MACRO                   0.751      0.757      0.108
+17:55:46 INFO   fold 2 ep 8 step 20/46 | loss 0.5149 | lr 2.54e-04 | gnorm 0.618 | 3116 samples/s | gpu mem 0.26 GB
+17:55:46 INFO   fold 2 ep 8 step 40/46 | loss 0.4447 | lr 2.49e-04 | gnorm 0.710 | 3496 samples/s | gpu mem 0.26 GB
+17:55:46 INFO [fold 2] epoch 8: train loss 0.4429 | val loss 0.4590 | macro AUC llm 0.7591 | gold 0.7850 | pred std 0.1505 | 0m01s | elapsed 0m05s, ETA 0m12s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.758      0.938      0.129      320       12
+MCL                     0.677      0.950      0.038      327       12
+Medial Meniscus         0.771      0.486      0.161      330       12
+Lateral Meniscus        0.738      0.686      0.080      324       12
+Medial OA               0.807      0.778      0.209      276       12
+Lateral OA              0.763      0.750      0.149      258       12
+PF OA                   0.712      0.531      0.170      298       12
+Effusion                0.909      0.850      0.277      204       12
+Synovitis               0.788      0.857      0.191       95       12
+Baker's                 0.695      0.850      0.153      181       12
+Contusion               0.758      0.829      0.154      248       12
+Fracture                0.734      0.917      0.095      141       12
+MACRO                   0.759      0.785      0.151
+17:55:46 INFO   fold 2 ep 9 step 20/46 | loss 0.4700 | lr 2.42e-04 | gnorm 0.887 | 3010 samples/s | gpu mem 0.26 GB
+17:55:46 INFO   fold 2 ep 9 step 40/46 | loss 0.4167 | lr 2.36e-04 | gnorm 0.578 | 3265 samples/s | gpu mem 0.26 GB
+17:55:47 INFO [fold 2] epoch 9: train loss 0.4351 | val loss 0.4787 | macro AUC llm 0.7589 | gold 0.7363 | pred std 0.1927 | 0m01s | elapsed 0m06s, ETA 0m12s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.757      0.906      0.204      320       12
+MCL                     0.689      0.950      0.082      327       12
+Medial Meniscus         0.776      0.486      0.179      330       12
+Lateral Meniscus        0.743      0.629      0.114      324       12
+Medial OA               0.822      0.704      0.222      276       12
+Lateral OA              0.764      0.750      0.191      258       12
+PF OA                   0.728      0.500      0.213      298       12
+Effusion                0.902      0.700      0.301      204       12
+Synovitis               0.798      0.800      0.230       95       12
+Baker's                 0.700      0.750      0.194      181       12
+Contusion               0.735      0.800      0.203      248       12
+Fracture                0.692      0.861      0.179      141       12
+MACRO                   0.759      0.736      0.193
+17:55:47 INFO   fold 2 ep 10 step 20/46 | loss 0.4284 | lr 2.28e-04 | gnorm 0.445 | 2975 samples/s | gpu mem 0.26 GB
+17:55:47 INFO   fold 2 ep 10 step 40/46 | loss 0.4246 | lr 2.22e-04 | gnorm 0.601 | 3514 samples/s | gpu mem 0.26 GB
+17:55:47 INFO [fold 2] epoch 10: train loss 0.4349 | val loss 0.4634 | macro AUC llm 0.7548 | gold 0.7614 | pred std 0.1539 | 0m01s | elapsed 0m06s, ETA 0m11s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.778      0.906      0.142      320       12
+MCL                     0.690      0.900      0.041      327       12
+Medial Meniscus         0.794      0.543      0.172      330       12
+Lateral Meniscus        0.735      0.629      0.133      324       12
+Medial OA               0.830      0.741      0.223      276       12
+Lateral OA              0.758      0.600      0.164      258       12
+PF OA                   0.716      0.500      0.205      298       12
+Effusion                0.899      0.950      0.238      204       12
+Synovitis               0.793      0.829      0.193       95       12
+Baker's                 0.676      0.850      0.145      181       12
+Contusion               0.726      0.829      0.110      248       12
+Fracture                0.663      0.861      0.080      141       12
+MACRO                   0.755      0.761      0.154
+17:55:47 INFO   fold 2 ep 11 step 20/46 | loss 0.4404 | lr 2.14e-04 | gnorm 1.055 | 3064 samples/s | gpu mem 0.26 GB
+17:55:47 INFO   fold 2 ep 11 step 40/46 | loss 0.4720 | lr 2.07e-04 | gnorm 1.174 | 3415 samples/s | gpu mem 0.26 GB
+17:55:48 INFO [fold 2] epoch 11: train loss 0.4235 | val loss 0.4646 | macro AUC llm 0.7491 | gold 0.8046 | pred std 0.1710 | 0m01s | elapsed 0m07s, ETA 0m10s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.709      0.875      0.142      320       12
+MCL                     0.614      0.950      0.042      327       12
+Medial Meniscus         0.789      0.429      0.207      330       12
+Lateral Meniscus        0.740      0.743      0.123      324       12
+Medial OA               0.826      0.926      0.263      276       12
+Lateral OA              0.774      0.800      0.176      258       12
+PF OA                   0.743      0.531      0.234      298       12
+Effusion                0.915      0.950      0.263      204       12
+Synovitis               0.731      0.829      0.200       95       12
+Baker's                 0.706      0.850      0.238      181       12
+Contusion               0.728      0.829      0.108      248       12
+Fracture                0.715      0.944      0.056      141       12
+MACRO                   0.749      0.805      0.171
+17:55:48 INFO   fold 2 ep 12 step 20/46 | loss 0.4193 | lr 1.99e-04 | gnorm 0.663 | 3122 samples/s | gpu mem 0.26 GB
+17:55:48 INFO   fold 2 ep 12 step 40/46 | loss 0.4342 | lr 1.92e-04 | gnorm 1.475 | 3400 samples/s | gpu mem 0.26 GB
+17:55:48 INFO [fold 2] epoch 12: train loss 0.4194 | val loss 0.4523 | macro AUC llm 0.7621 | gold 0.7788 | pred std 0.1700 | 0m01s | elapsed 0m08s, ETA 0m10s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.758      0.906      0.144      320       12
+MCL                     0.740      1.000      0.046      327       12
+Medial Meniscus         0.795      0.371      0.215      330       12
+Lateral Meniscus        0.731      0.600      0.124      324       12
+Medial OA               0.837      0.852      0.252      276       12
+Lateral OA              0.771      0.800      0.202      258       12
+PF OA                   0.732      0.500      0.220      298       12
+Effusion                0.908      0.950      0.253      204       12
+Synovitis               0.744      0.857      0.196       95       12
+Baker's                 0.707      0.850      0.178      181       12
+Contusion               0.709      0.743      0.136      248       12
+Fracture                0.713      0.917      0.072      141       12
+MACRO                   0.762      0.779      0.170
+17:55:48 INFO   fold 2 ep 13 step 20/46 | loss 0.4288 | lr 1.83e-04 | gnorm 0.656 | 3131 samples/s | gpu mem 0.26 GB
+17:55:49 INFO   fold 2 ep 13 step 40/46 | loss 0.4028 | lr 1.76e-04 | gnorm 0.899 | 3452 samples/s | gpu mem 0.26 GB
+17:55:49 INFO [fold 2] epoch 13: train loss 0.4061 | val loss 0.4527 | macro AUC llm 0.7584 | gold 0.8061 | pred std 0.1747 | 0m01s | elapsed 0m08s, ETA 0m09s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.755      0.875      0.118      320       12
+MCL                     0.699      0.900      0.036      327       12
+Medial Meniscus         0.786      0.400      0.209      330       12
+Lateral Meniscus        0.741      0.800      0.111      324       12
+Medial OA               0.837      1.000      0.265      276       12
+Lateral OA              0.772      0.800      0.177      258       12
+PF OA                   0.734      0.531      0.222      298       12
+Effusion                0.915      0.950      0.259      204       12
+Synovitis               0.753      0.800      0.214       95       12
+Baker's                 0.707      0.900      0.234      181       12
+Contusion               0.710      0.829      0.162      248       12
+Fracture                0.691      0.889      0.090      141       12
+MACRO                   0.758      0.806      0.175
+17:55:49 INFO   fold 2 ep 14 step 20/46 | loss 0.4122 | lr 1.67e-04 | gnorm 0.986 | 3127 samples/s | gpu mem 0.26 GB
+17:55:49 INFO   fold 2 ep 14 step 40/46 | loss 0.3814 | lr 1.60e-04 | gnorm 0.789 | 3455 samples/s | gpu mem 0.26 GB
+17:55:49 INFO [fold 2] epoch 14: train loss 0.4029 | val loss 0.4582 | macro AUC llm 0.7695 | gold 0.7751 | pred std 0.1926 | 0m01s | elapsed 0m09s, ETA 0m09s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.737      0.844      0.117      320       12
+MCL                     0.713      0.950      0.048      327       12
+Medial Meniscus         0.812      0.486      0.217      330       12
+Lateral Meniscus        0.734      0.629      0.104      324       12
+Medial OA               0.835      0.926      0.283      276       12
+Lateral OA              0.773      0.750      0.219      258       12
+PF OA                   0.742      0.531      0.270      298       12
+Effusion                0.918      0.950      0.266      204       12
+Synovitis               0.765      0.829      0.246       95       12
+Baker's                 0.714      0.800      0.252      181       12
+Contusion               0.748      0.886      0.171      248       12
+Fracture                0.742      0.722      0.118      141       12
+MACRO                   0.769      0.775      0.193
+17:55:50 INFO   fold 2 ep 15 step 20/46 | loss 0.4255 | lr 1.51e-04 | gnorm 1.176 | 3024 samples/s | gpu mem 0.26 GB
+17:55:50 INFO   fold 2 ep 15 step 40/46 | loss 0.3629 | lr 1.44e-04 | gnorm 0.698 | 3202 samples/s | gpu mem 0.26 GB
+17:55:50 INFO [fold 2] epoch 15: train loss 0.3990 | val loss 0.4519 | macro AUC llm 0.7709 | gold 0.7940 | pred std 0.1774 | 0m01s | elapsed 0m09s, ETA 0m08s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.749      0.812      0.109      320       12
+MCL                     0.728      1.000      0.040      327       12
+Medial Meniscus         0.811      0.429      0.216      330       12
+Lateral Meniscus        0.719      0.600      0.119      324       12
+Medial OA               0.842      1.000      0.261      276       12
+Lateral OA              0.785      0.750      0.189      258       12
+PF OA                   0.753      0.625      0.244      298       12
+Effusion                0.909      0.950      0.275      204       12
+Synovitis               0.754      0.743      0.234       95       12
+Baker's                 0.699      0.900      0.238      181       12
+Contusion               0.746      0.886      0.119      248       12
+Fracture                0.755      0.833      0.086      141       12
+MACRO                   0.771      0.794      0.177
+17:55:50 INFO   fold 2 ep 16 step 20/46 | loss 0.3695 | lr 1.35e-04 | gnorm 0.598 | 2944 samples/s | gpu mem 0.26 GB
+17:55:50 INFO   fold 2 ep 16 step 40/46 | loss 0.3042 | lr 1.28e-04 | gnorm 0.628 | 3261 samples/s | gpu mem 0.26 GB
+17:55:51 INFO [fold 2] epoch 16: train loss 0.3818 | val loss 0.4497 | macro AUC llm 0.7663 | gold 0.7478 | pred std 0.2093 | 0m01s | elapsed 0m10s, ETA 0m08s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.781      0.906      0.179      320       12
+MCL                     0.735      0.850      0.069      327       12
+Medial Meniscus         0.822      0.400      0.257      330       12
+Lateral Meniscus        0.708      0.571      0.168      324       12
+Medial OA               0.840      0.815      0.273      276       12
+Lateral OA              0.779      0.750      0.212      258       12
+PF OA                   0.748      0.531      0.243      298       12
+Effusion                0.918      1.000      0.290      204       12
+Synovitis               0.724      0.714      0.242       95       12
+Baker's                 0.715      0.800      0.257      181       12
+Contusion               0.688      0.886      0.193      248       12
+Fracture                0.739      0.750      0.129      141       12
+MACRO                   0.766      0.748      0.209
+17:55:51 INFO   fold 2 ep 17 step 20/46 | loss 0.3234 | lr 1.19e-04 | gnorm 1.515 | 3094 samples/s | gpu mem 0.26 GB
+17:55:51 INFO   fold 2 ep 17 step 40/46 | loss 0.4194 | lr 1.12e-04 | gnorm 0.873 | 3344 samples/s | gpu mem 0.26 GB
+17:55:51 INFO [fold 2] epoch 17: train loss 0.3688 | val loss 0.4533 | macro AUC llm 0.7642 | gold 0.7356 | pred std 0.2021 | 0m01s | elapsed 0m10s, ETA 0m07s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.734      0.781      0.177      320       12
+MCL                     0.709      0.850      0.092      327       12
+Medial Meniscus         0.826      0.400      0.241      330       12
+Lateral Meniscus        0.703      0.486      0.118      324       12
+Medial OA               0.843      0.852      0.271      276       12
+Lateral OA              0.781      0.750      0.200      258       12
+PF OA                   0.754      0.562      0.253      298       12
+Effusion                0.918      1.000      0.275      204       12
+Synovitis               0.733      0.743      0.247       95       12
+Baker's                 0.703      0.850      0.245      181       12
+Contusion               0.713      0.914      0.186      248       12
+Fracture                0.753      0.639      0.121      141       12
+MACRO                   0.764      0.736      0.202
+17:55:51 INFO   fold 2 ep 18 step 20/46 | loss 0.4017 | lr 1.03e-04 | gnorm 0.852 | 3135 samples/s | gpu mem 0.26 GB
+17:55:51 INFO   fold 2 ep 18 step 40/46 | loss 0.3807 | lr 9.65e-05 | gnorm 1.207 | 3371 samples/s | gpu mem 0.26 GB
+17:55:52 INFO [fold 2] epoch 18: train loss 0.3625 | val loss 0.4538 | macro AUC llm 0.7607 | gold 0.7696 | pred std 0.2118 | 0m01s | elapsed 0m11s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.770      0.844      0.193      320       12
+MCL                     0.711      0.850      0.080      327       12
+Medial Meniscus         0.817      0.514      0.270      330       12
+Lateral Meniscus        0.698      0.600      0.172      324       12
+Medial OA               0.843      0.963      0.274      276       12
+Lateral OA              0.780      0.800      0.204      258       12
+PF OA                   0.753      0.469      0.231      298       12
+Effusion                0.914      1.000      0.289      204       12
+Synovitis               0.668      0.714      0.221       95       12
+Baker's                 0.676      0.900      0.236      181       12
+Contusion               0.718      0.914      0.221      248       12
+Fracture                0.781      0.667      0.152      141       12
+MACRO                   0.761      0.770      0.212
+17:55:52 INFO   fold 2 ep 19 step 20/46 | loss 0.3174 | lr 8.80e-05 | gnorm 1.720 | 3078 samples/s | gpu mem 0.26 GB
+17:55:52 INFO   fold 2 ep 19 step 40/46 | loss 0.3360 | lr 8.16e-05 | gnorm 1.041 | 3401 samples/s | gpu mem 0.26 GB
+17:55:52 INFO [fold 2] epoch 19: train loss 0.3509 | val loss 0.4655 | macro AUC llm 0.7660 | gold 0.7103 | pred std 0.2178 | 0m01s | elapsed 0m12s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.776      0.781      0.188      320       12
+MCL                     0.753      0.850      0.105      327       12
+Medial Meniscus         0.813      0.571      0.247      330       12
+Lateral Meniscus        0.697      0.514      0.135      324       12
+Medial OA               0.824      0.704      0.273      276       12
+Lateral OA              0.771      0.600      0.223      258       12
+PF OA                   0.733      0.406      0.263      298       12
+Effusion                0.916      1.000      0.290      204       12
+Synovitis               0.730      0.800      0.270       95       12
+Baker's                 0.674      0.800      0.232      181       12
+Contusion               0.729      0.886      0.203      248       12
+Fracture                0.775      0.611      0.185      141       12
+MACRO                   0.766      0.710      0.218
+17:55:52 INFO   fold 2 ep 20 step 20/46 | loss 0.2927 | lr 7.36e-05 | gnorm 0.978 | 3111 samples/s | gpu mem 0.26 GB
+17:55:53 INFO   fold 2 ep 20 step 40/46 | loss 0.3311 | lr 6.76e-05 | gnorm 0.820 | 3407 samples/s | gpu mem 0.26 GB
+17:55:53 INFO [fold 2] epoch 20: train loss 0.3403 | val loss 0.4624 | macro AUC llm 0.7690 | gold 0.7505 | pred std 0.2321 | 0m01s | elapsed 0m12s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.764      0.781      0.224      320       12
+MCL                     0.732      0.950      0.113      327       12
+Medial Meniscus         0.824      0.543      0.270      330       12
+Lateral Meniscus        0.702      0.486      0.186      324       12
+Medial OA               0.841      0.741      0.303      276       12
+Lateral OA              0.784      0.700      0.238      258       12
+PF OA                   0.749      0.469      0.264      298       12
+Effusion                0.921      1.000      0.304      204       12
+Synovitis               0.727      0.800      0.270       95       12
+Baker's                 0.696      0.900      0.288      181       12
+Contusion               0.725      0.914      0.201      248       12
+Fracture                0.764      0.722      0.124      141       12
+MACRO                   0.769      0.750      0.232
+17:55:53 INFO   fold 2 ep 21 step 20/46 | loss 0.3656 | lr 6.01e-05 | gnorm 1.044 | 3081 samples/s | gpu mem 0.26 GB
+17:55:53 INFO   fold 2 ep 21 step 40/46 | loss 0.3413 | lr 5.45e-05 | gnorm 0.940 | 3412 samples/s | gpu mem 0.26 GB
+17:55:53 INFO [fold 2] epoch 21: train loss 0.3297 | val loss 0.4667 | macro AUC llm 0.7606 | gold 0.7285 | pred std 0.2134 | 0m01s | elapsed 0m13s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.755      0.781      0.145      320       12
+MCL                     0.701      0.850      0.074      327       12
+Medial Meniscus         0.811      0.514      0.253      330       12
+Lateral Meniscus        0.681      0.457      0.170      324       12
+Medial OA               0.832      0.815      0.281      276       12
+Lateral OA              0.778      0.650      0.210      258       12
+PF OA                   0.757      0.438      0.274      298       12
+Effusion                0.917      1.000      0.286      204       12
+Synovitis               0.738      0.829      0.279       95       12
+Baker's                 0.697      0.800      0.265      181       12
+Contusion               0.683      0.914      0.172      248       12
+Fracture                0.776      0.694      0.151      141       12
+MACRO                   0.761      0.729      0.213
+17:55:54 INFO   fold 2 ep 22 step 20/46 | loss 0.3739 | lr 4.76e-05 | gnorm 1.648 | 3088 samples/s | gpu mem 0.26 GB
+17:55:54 INFO   fold 2 ep 22 step 40/46 | loss 0.3359 | lr 4.26e-05 | gnorm 1.105 | 3361 samples/s | gpu mem 0.26 GB
+17:55:54 INFO [fold 2] epoch 22: train loss 0.3205 | val loss 0.4868 | macro AUC llm 0.7701 | gold 0.7219 | pred std 0.2501 | 0m01s | elapsed 0m13s, ETA 0m04s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.754      0.812      0.243      320       12
+MCL                     0.736      0.950      0.120      327       12
+Medial Meniscus         0.824      0.543      0.279      330       12
+Lateral Meniscus        0.680      0.429      0.226      324       12
+Medial OA               0.835      0.630      0.325      276       12
+Lateral OA              0.782      0.650      0.265      258       12
+PF OA                   0.762      0.469      0.291      298       12
+Effusion                0.926      1.000      0.301      204       12
+Synovitis               0.744      0.800      0.300       95       12
+Baker's                 0.700      0.800      0.297      181       12
+Contusion               0.729      0.886      0.217      248       12
+Fracture                0.770      0.694      0.135      141       12
+MACRO                   0.770      0.722      0.250
+17:55:54 INFO   fold 2 ep 23 step 20/46 | loss 0.2752 | lr 3.64e-05 | gnorm 0.968 | 3033 samples/s | gpu mem 0.26 GB
+17:55:54 INFO   fold 2 ep 23 step 40/46 | loss 0.3488 | lr 3.19e-05 | gnorm 0.858 | 3410 samples/s | gpu mem 0.26 GB
+17:55:54 INFO [fold 2] epoch 23: train loss 0.3108 | val loss 0.4754 | macro AUC llm 0.7702 | gold 0.7280 | pred std 0.2429 | 0m01s | elapsed 0m14s, ETA 0m03s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.758      0.812      0.214      320       12
+MCL                     0.746      0.900      0.119      327       12
+Medial Meniscus         0.821      0.600      0.279      330       12
+Lateral Meniscus        0.685      0.457      0.208      324       12
+Medial OA               0.836      0.741      0.305      276       12
+Lateral OA              0.780      0.600      0.255      258       12
+PF OA                   0.763      0.500      0.294      298       12
+Effusion                0.918      1.000      0.301      204       12
+Synovitis               0.734      0.829      0.296       95       12
+Baker's                 0.689      0.800      0.291      181       12
+Contusion               0.725      0.914      0.201      248       12
+Fracture                0.787      0.583      0.154      141       12
+MACRO                   0.770      0.728      0.243
+17:55:54 INFO [fold 2] early stopping at epoch 23 (no improvement for 8 epochs)
+17:55:54 INFO [fold 2] best epoch 15 | macro AUC llm 0.7709 | gold 0.7940 | checkpoint /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold2/best.pt | OOF /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold2/oof.csv
+17:55:55 INFO [fold 3] train 1488 / val 382 studies (gold in val: 11) | 2.84M params | 46 steps/epoch x 30 epochs | mirror_aug 0.0
+17:55:55 INFO   fold 3 ep 0 step 20/46 | loss 0.4438 | lr 1.37e-04 | gnorm 0.566 | 2465 samples/s | gpu mem 0.26 GB
+17:55:55 INFO   fold 3 ep 0 step 40/46 | loss 0.4896 | lr 2.67e-04 | gnorm 0.409 | 3473 samples/s | gpu mem 0.26 GB
+17:55:55 INFO [fold 3] epoch 0: train loss 0.5606 | val loss 0.5210 | macro AUC llm 0.6254 | gold 0.7171 | pred std 0.0046 | 0m01s | elapsed 0m01s, ETA 0m19s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.601      0.893      0.002      332       11
+MCL                     0.562      0.556      0.001      330       11
+Medial Meniscus         0.641      0.643      0.009      335       11
+Lateral Meniscus        0.634      0.733      0.004      334       11
+Medial OA               0.735      1.000      0.010      279       11
+Lateral OA              0.705      1.000      0.003      267       11
+PF OA                   0.718      0.700      0.010      292       11
+Effusion                0.637      0.433      0.004      213       11
+Synovitis               0.593      0.467      0.003      102       11
+Baker's                 0.586      0.889      0.006      188       11
+Contusion               0.534      0.750      0.002      212       11
+Fracture                0.558      0.542      0.001      131       11
+MACRO                   0.625      0.717      0.005
+17:55:55 WARNING !!! COLLAPSE WARNING: mean per-label std of val predictions is 0.0046 (< 0.02): predictions are collapsing to the base rate
+17:55:55 INFO   fold 3 ep 1 step 20/46 | loss 0.5364 | lr 3.00e-04 | gnorm 0.337 | 2951 samples/s | gpu mem 0.26 GB
+17:55:56 INFO   fold 3 ep 1 step 40/46 | loss 0.4989 | lr 2.99e-04 | gnorm 0.509 | 3387 samples/s | gpu mem 0.26 GB
+17:55:56 INFO [fold 3] epoch 1: train loss 0.5228 | val loss 0.5211 | macro AUC llm 0.6408 | gold 0.6569 | pred std 0.0834 | 0m01s | elapsed 0m01s, ETA 0m18s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.521      0.393      0.027      332       11
+MCL                     0.272      0.444      0.018      330       11
+Medial Meniscus         0.646      0.643      0.100      335       11
+Lateral Meniscus        0.632      0.733      0.097      334       11
+Medial OA               0.798      1.000      0.179      279       11
+Lateral OA              0.751      1.000      0.141      267       11
+PF OA                   0.753      0.767      0.165      292       11
+Effusion                0.788      0.667      0.031      213       11
+Synovitis               0.716      0.667      0.044      102       11
+Baker's                 0.662      0.944      0.122      188       11
+Contusion               0.402      0.167      0.021      212       11
+Fracture                0.747      0.458      0.055      131       11
+MACRO                   0.641      0.657      0.083
+17:55:56 INFO   fold 3 ep 2 step 20/46 | loss 0.4499 | lr 2.98e-04 | gnorm 0.581 | 3086 samples/s | gpu mem 0.26 GB
+17:55:56 INFO   fold 3 ep 2 step 40/46 | loss 0.6148 | lr 2.97e-04 | gnorm 0.620 | 3477 samples/s | gpu mem 0.26 GB
+17:55:56 INFO [fold 3] epoch 2: train loss 0.4935 | val loss 0.5059 | macro AUC llm 0.6848 | gold 0.6749 | pred std 0.1196 | 0m01s | elapsed 0m02s, ETA 0m16s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.597      0.500      0.039      332       11
+MCL                     0.391      0.389      0.037      330       11
+Medial Meniscus         0.673      0.571      0.161      335       11
+Lateral Meniscus        0.625      0.700      0.093      334       11
+Medial OA               0.826      0.958      0.245      279       11
+Lateral OA              0.777      1.000      0.172      267       11
+PF OA                   0.787      0.767      0.170      292       11
+Effusion                0.813      0.700      0.124      213       11
+Synovitis               0.716      0.667      0.134      102       11
+Baker's                 0.704      0.889      0.180      188       11
+Contusion               0.547      0.458      0.022      212       11
+Fracture                0.761      0.500      0.059      131       11
+MACRO                   0.685      0.675      0.120
+17:55:57 INFO   fold 3 ep 3 step 20/46 | loss 0.4941 | lr 2.95e-04 | gnorm 0.828 | 3086 samples/s | gpu mem 0.26 GB
+17:55:57 INFO   fold 3 ep 3 step 40/46 | loss 0.4163 | lr 2.93e-04 | gnorm 0.350 | 3561 samples/s | gpu mem 0.26 GB
+17:55:57 INFO [fold 3] epoch 3: train loss 0.4867 | val loss 0.4751 | macro AUC llm 0.6794 | gold 0.6510 | pred std 0.1227 | 0m01s | elapsed 0m02s, ETA 0m16s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.621      0.607      0.049      332       11
+MCL                     0.363      0.278      0.021      330       11
+Medial Meniscus         0.680      0.571      0.178      335       11
+Lateral Meniscus        0.635      0.667      0.096      334       11
+Medial OA               0.841      0.917      0.209      279       11
+Lateral OA              0.796      0.944      0.139      267       11
+PF OA                   0.795      0.733      0.173      292       11
+Effusion                0.834      0.767      0.193      213       11
+Synovitis               0.705      0.633      0.167      102       11
+Baker's                 0.722      0.944      0.150      188       11
+Contusion               0.452      0.292      0.032      212       11
+Fracture                0.709      0.458      0.065      131       11
+MACRO                   0.679      0.651      0.123
+17:55:57 INFO   fold 3 ep 4 step 20/46 | loss 0.4007 | lr 2.90e-04 | gnorm 0.643 | 3151 samples/s | gpu mem 0.26 GB
+17:55:57 INFO   fold 3 ep 4 step 40/46 | loss 0.4452 | lr 2.87e-04 | gnorm 0.449 | 3528 samples/s | gpu mem 0.26 GB
+17:55:57 INFO [fold 3] epoch 4: train loss 0.4739 | val loss 0.4727 | macro AUC llm 0.7348 | gold 0.7014 | pred std 0.1069 | 0m01s | elapsed 0m03s, ETA 0m15s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.722      0.679      0.102      332       11
+MCL                     0.573      0.389      0.033      330       11
+Medial Meniscus         0.709      0.536      0.151      335       11
+Lateral Meniscus        0.679      0.700      0.084      334       11
+Medial OA               0.845      0.875      0.157      279       11
+Lateral OA              0.795      1.000      0.097      267       11
+PF OA                   0.801      0.767      0.110      292       11
+Effusion                0.879      0.800      0.191      213       11
+Synovitis               0.713      0.700      0.133      102       11
+Baker's                 0.732      0.889      0.109      188       11
+Contusion               0.674      0.500      0.047      212       11
+Fracture                0.695      0.583      0.070      131       11
+MACRO                   0.735      0.701      0.107
+17:55:58 INFO   fold 3 ep 5 step 20/46 | loss 0.4852 | lr 2.83e-04 | gnorm 0.508 | 3030 samples/s | gpu mem 0.26 GB
+17:55:58 INFO   fold 3 ep 5 step 40/46 | loss 0.4458 | lr 2.80e-04 | gnorm 0.671 | 3422 samples/s | gpu mem 0.26 GB
+17:55:58 INFO [fold 3] epoch 5: train loss 0.4677 | val loss 0.4649 | macro AUC llm 0.7399 | gold 0.7025 | pred std 0.1234 | 0m01s | elapsed 0m04s, ETA 0m14s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.706      0.714      0.082      332       11
+MCL                     0.571      0.389      0.020      330       11
+Medial Meniscus         0.692      0.571      0.175      335       11
+Lateral Meniscus        0.643      0.633      0.080      334       11
+Medial OA               0.837      0.917      0.208      279       11
+Lateral OA              0.790      1.000      0.119      267       11
+PF OA                   0.806      0.767      0.167      292       11
+Effusion                0.892      0.800      0.213      213       11
+Synovitis               0.712      0.667      0.164      102       11
+Baker's                 0.721      0.889      0.108      188       11
+Contusion               0.720      0.458      0.070      212       11
+Fracture                0.792      0.625      0.074      131       11
+MACRO                   0.740      0.703      0.123
+17:55:58 INFO   fold 3 ep 6 step 20/46 | loss 0.4131 | lr 2.75e-04 | gnorm 0.453 | 3008 samples/s | gpu mem 0.26 GB
+17:55:58 INFO   fold 3 ep 6 step 40/46 | loss 0.4414 | lr 2.71e-04 | gnorm 0.849 | 3449 samples/s | gpu mem 0.26 GB
+17:55:59 INFO [fold 3] epoch 6: train loss 0.4572 | val loss 0.4586 | macro AUC llm 0.7435 | gold 0.7213 | pred std 0.1552 | 0m01s | elapsed 0m04s, ETA 0m13s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.719      0.643      0.116      332       11
+MCL                     0.622      0.444      0.051      330       11
+Medial Meniscus         0.710      0.571      0.194      335       11
+Lateral Meniscus        0.692      0.600      0.133      334       11
+Medial OA               0.846      0.917      0.244      279       11
+Lateral OA              0.806      0.944      0.171      267       11
+PF OA                   0.810      0.733      0.184      292       11
+Effusion                0.886      0.800      0.246      213       11
+Synovitis               0.683      0.767      0.150      102       11
+Baker's                 0.730      0.944      0.166      188       11
+Contusion               0.734      0.625      0.138      212       11
+Fracture                0.683      0.667      0.070      131       11
+MACRO                   0.743      0.721      0.155
+17:55:59 INFO   fold 3 ep 7 step 20/46 | loss 0.4973 | lr 2.65e-04 | gnorm 0.856 | 3089 samples/s | gpu mem 0.26 GB
+17:55:59 INFO   fold 3 ep 7 step 40/46 | loss 0.4614 | lr 2.60e-04 | gnorm 0.807 | 3437 samples/s | gpu mem 0.26 GB
+17:55:59 INFO [fold 3] epoch 7: train loss 0.4560 | val loss 0.4720 | macro AUC llm 0.7188 | gold 0.7229 | pred std 0.1184 | 0m01s | elapsed 0m05s, ETA 0m13s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.612      0.679      0.034      332       11
+MCL                     0.470      0.444      0.024      330       11
+Medial Meniscus         0.711      0.607      0.190      335       11
+Lateral Meniscus        0.651      0.667      0.069      334       11
+Medial OA               0.843      0.958      0.175      279       11
+Lateral OA              0.805      1.000      0.104      267       11
+PF OA                   0.798      0.767      0.149      292       11
+Effusion                0.872      0.833      0.269      213       11
+Synovitis               0.714      0.733      0.171      102       11
+Baker's                 0.712      0.944      0.137      188       11
+Contusion               0.712      0.458      0.053      212       11
+Fracture                0.726      0.583      0.046      131       11
+MACRO                   0.719      0.723      0.118
+17:55:59 INFO   fold 3 ep 8 step 20/46 | loss 0.4845 | lr 2.54e-04 | gnorm 0.680 | 2922 samples/s | gpu mem 0.26 GB
+17:56:00 INFO   fold 3 ep 8 step 40/46 | loss 0.5081 | lr 2.49e-04 | gnorm 0.886 | 3142 samples/s | gpu mem 0.26 GB
+17:56:00 INFO [fold 3] epoch 8: train loss 0.4498 | val loss 0.4632 | macro AUC llm 0.7481 | gold 0.7358 | pred std 0.1827 | 0m01s | elapsed 0m05s, ETA 0m12s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.695      0.643      0.120      332       11
+MCL                     0.649      0.500      0.063      330       11
+Medial Meniscus         0.722      0.643      0.189      335       11
+Lateral Meniscus        0.675      0.633      0.174      334       11
+Medial OA               0.844      0.917      0.285      279       11
+Lateral OA              0.809      1.000      0.217      267       11
+PF OA                   0.813      0.767      0.226      292       11
+Effusion                0.880      0.800      0.279      213       11
+Synovitis               0.738      0.733      0.194      102       11
+Baker's                 0.690      0.944      0.191      188       11
+Contusion               0.745      0.583      0.147      212       11
+Fracture                0.716      0.667      0.107      131       11
+MACRO                   0.748      0.736      0.183
+17:56:00 INFO   fold 3 ep 9 step 20/46 | loss 0.4423 | lr 2.42e-04 | gnorm 1.135 | 3078 samples/s | gpu mem 0.26 GB
+17:56:00 INFO   fold 3 ep 9 step 40/46 | loss 0.4040 | lr 2.36e-04 | gnorm 0.473 | 3251 samples/s | gpu mem 0.26 GB
+17:56:00 INFO [fold 3] epoch 9: train loss 0.4397 | val loss 0.4546 | macro AUC llm 0.7576 | gold 0.7296 | pred std 0.1813 | 0m01s | elapsed 0m06s, ETA 0m12s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.684      0.643      0.114      332       11
+MCL                     0.646      0.500      0.075      330       11
+Medial Meniscus         0.726      0.643      0.228      335       11
+Lateral Meniscus        0.722      0.633      0.121      334       11
+Medial OA               0.845      0.917      0.274      279       11
+Lateral OA              0.810      1.000      0.178      267       11
+PF OA                   0.818      0.767      0.239      292       11
+Effusion                0.885      0.800      0.305      213       11
+Synovitis               0.707      0.700      0.213      102       11
+Baker's                 0.738      0.944      0.152      188       11
+Contusion               0.765      0.583      0.158      212       11
+Fracture                0.744      0.625      0.120      131       11
+MACRO                   0.758      0.730      0.181
+17:56:01 INFO   fold 3 ep 10 step 20/46 | loss 0.5038 | lr 2.28e-04 | gnorm 0.708 | 2972 samples/s | gpu mem 0.26 GB
+17:56:01 INFO   fold 3 ep 10 step 40/46 | loss 0.4938 | lr 2.22e-04 | gnorm 0.887 | 3154 samples/s | gpu mem 0.26 GB
+17:56:01 INFO [fold 3] epoch 10: train loss 0.4323 | val loss 0.4513 | macro AUC llm 0.7580 | gold 0.7325 | pred std 0.1764 | 0m01s | elapsed 0m06s, ETA 0m11s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.704      0.607      0.168      332       11
+MCL                     0.702      0.500      0.071      330       11
+Medial Meniscus         0.727      0.571      0.210      335       11
+Lateral Meniscus        0.686      0.633      0.101      334       11
+Medial OA               0.850      0.917      0.262      279       11
+Lateral OA              0.816      1.000      0.180      267       11
+PF OA                   0.822      0.767      0.201      292       11
+Effusion                0.890      0.833      0.277      213       11
+Synovitis               0.720      0.767      0.198      102       11
+Baker's                 0.707      0.944      0.163      188       11
+Contusion               0.755      0.625      0.169      212       11
+Fracture                0.718      0.625      0.116      131       11
+MACRO                   0.758      0.732      0.176
+17:56:01 INFO   fold 3 ep 11 step 20/46 | loss 0.4349 | lr 2.14e-04 | gnorm 0.512 | 2931 samples/s | gpu mem 0.26 GB
+17:56:01 INFO   fold 3 ep 11 step 40/46 | loss 0.4107 | lr 2.07e-04 | gnorm 0.674 | 3238 samples/s | gpu mem 0.26 GB
+17:56:02 INFO [fold 3] epoch 11: train loss 0.4233 | val loss 0.4627 | macro AUC llm 0.7608 | gold 0.7761 | pred std 0.1366 | 0m01s | elapsed 0m07s, ETA 0m11s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.707      0.643      0.117      332       11
+MCL                     0.701      0.667      0.051      330       11
+Medial Meniscus         0.742      0.643      0.179      335       11
+Lateral Meniscus        0.702      0.667      0.068      334       11
+Medial OA               0.838      0.958      0.164      279       11
+Lateral OA              0.813      1.000      0.109      267       11
+PF OA                   0.828      0.767      0.151      292       11
+Effusion                0.900      0.833      0.241      213       11
+Synovitis               0.711      0.733      0.158      102       11
+Baker's                 0.722      0.944      0.147      188       11
+Contusion               0.776      0.708      0.149      212       11
+Fracture                0.690      0.750      0.105      131       11
+MACRO                   0.761      0.776      0.137
+17:56:02 INFO   fold 3 ep 12 step 20/46 | loss 0.4491 | lr 1.99e-04 | gnorm 0.608 | 2917 samples/s | gpu mem 0.26 GB
+17:56:02 INFO   fold 3 ep 12 step 40/46 | loss 0.4346 | lr 1.92e-04 | gnorm 1.607 | 3225 samples/s | gpu mem 0.26 GB
+17:56:02 INFO [fold 3] epoch 12: train loss 0.4260 | val loss 0.4502 | macro AUC llm 0.7621 | gold 0.7602 | pred std 0.1813 | 0m01s | elapsed 0m08s, ETA 0m10s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.700      0.714      0.158      332       11
+MCL                     0.678      0.611      0.081      330       11
+Medial Meniscus         0.732      0.750      0.211      335       11
+Lateral Meniscus        0.687      0.733      0.137      334       11
+Medial OA               0.848      0.917      0.237      279       11
+Lateral OA              0.822      0.944      0.195      267       11
+PF OA                   0.815      0.733      0.211      292       11
+Effusion                0.899      0.833      0.301      213       11
+Synovitis               0.747      0.733      0.196      102       11
+Baker's                 0.719      0.944      0.164      188       11
+Contusion               0.761      0.583      0.165      212       11
+Fracture                0.738      0.625      0.122      131       11
+MACRO                   0.762      0.760      0.181
+17:56:02 INFO   fold 3 ep 13 step 20/46 | loss 0.3874 | lr 1.83e-04 | gnorm 0.861 | 3006 samples/s | gpu mem 0.26 GB
+17:56:03 INFO   fold 3 ep 13 step 40/46 | loss 0.4339 | lr 1.76e-04 | gnorm 1.374 | 3376 samples/s | gpu mem 0.26 GB
+17:56:03 INFO [fold 3] epoch 13: train loss 0.4165 | val loss 0.4574 | macro AUC llm 0.7792 | gold 0.7696 | pred std 0.1944 | 0m01s | elapsed 0m08s, ETA 0m09s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.740      0.571      0.214      332       11
+MCL                     0.761      0.556      0.131      330       11
+Medial Meniscus         0.734      0.750      0.217      335       11
+Lateral Meniscus        0.730      0.767      0.158      334       11
+Medial OA               0.855      0.917      0.215      279       11
+Lateral OA              0.822      0.889      0.162      267       11
+PF OA                   0.816      0.733      0.178      292       11
+Effusion                0.890      0.833      0.301      213       11
+Synovitis               0.724      0.733      0.201      102       11
+Baker's                 0.726      0.944      0.187      188       11
+Contusion               0.813      0.667      0.208      212       11
+Fracture                0.739      0.875      0.161      131       11
+MACRO                   0.779      0.770      0.194
+17:56:03 INFO   fold 3 ep 14 step 20/46 | loss 0.3821 | lr 1.67e-04 | gnorm 0.973 | 2892 samples/s | gpu mem 0.26 GB
+17:56:03 INFO   fold 3 ep 14 step 40/46 | loss 0.3955 | lr 1.60e-04 | gnorm 0.872 | 2999 samples/s | gpu mem 0.26 GB
+17:56:03 INFO [fold 3] epoch 14: train loss 0.4026 | val loss 0.4545 | macro AUC llm 0.7565 | gold 0.7656 | pred std 0.1857 | 0m01s | elapsed 0m09s, ETA 0m09s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.688      0.750      0.140      332       11
+MCL                     0.660      0.778      0.060      330       11
+Medial Meniscus         0.738      0.607      0.238      335       11
+Lateral Meniscus        0.669      0.567      0.131      334       11
+Medial OA               0.833      0.917      0.282      279       11
+Lateral OA              0.818      1.000      0.207      267       11
+PF OA                   0.820      0.767      0.233      292       11
+Effusion                0.897      0.833      0.282      213       11
+Synovitis               0.728      0.733      0.217      102       11
+Baker's                 0.730      0.944      0.185      188       11
+Contusion               0.786      0.667      0.143      212       11
+Fracture                0.712      0.625      0.110      131       11
+MACRO                   0.757      0.766      0.186
+17:56:04 INFO   fold 3 ep 15 step 20/46 | loss 0.4569 | lr 1.51e-04 | gnorm 0.896 | 2945 samples/s | gpu mem 0.26 GB
+17:56:04 INFO   fold 3 ep 15 step 40/46 | loss 0.3906 | lr 1.44e-04 | gnorm 0.746 | 3274 samples/s | gpu mem 0.26 GB
+17:56:04 INFO [fold 3] epoch 15: train loss 0.3954 | val loss 0.4448 | macro AUC llm 0.7703 | gold 0.7861 | pred std 0.2030 | 0m01s | elapsed 0m09s, ETA 0m08s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.701      0.750      0.155      332       11
+MCL                     0.722      0.778      0.078      330       11
+Medial Meniscus         0.745      0.714      0.247      335       11
+Lateral Meniscus        0.690      0.633      0.138      334       11
+Medial OA               0.844      0.958      0.286      279       11
+Lateral OA              0.811      1.000      0.219      267       11
+PF OA                   0.825      0.733      0.240      292       11
+Effusion                0.906      0.833      0.311      213       11
+Synovitis               0.726      0.700      0.217      102       11
+Baker's                 0.741      1.000      0.229      188       11
+Contusion               0.784      0.667      0.180      212       11
+Fracture                0.748      0.667      0.136      131       11
+MACRO                   0.770      0.786      0.203
+17:56:04 INFO   fold 3 ep 16 step 20/46 | loss 0.3880 | lr 1.35e-04 | gnorm 0.765 | 2942 samples/s | gpu mem 0.26 GB
+17:56:04 INFO   fold 3 ep 16 step 40/46 | loss 0.3788 | lr 1.28e-04 | gnorm 1.118 | 3329 samples/s | gpu mem 0.26 GB
+17:56:05 INFO [fold 3] epoch 16: train loss 0.3811 | val loss 0.4496 | macro AUC llm 0.7764 | gold 0.7859 | pred std 0.1758 | 0m01s | elapsed 0m10s, ETA 0m08s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.723      0.714      0.150      332       11
+MCL                     0.757      0.722      0.056      330       11
+Medial Meniscus         0.739      0.714      0.243      335       11
+Lateral Meniscus        0.718      0.700      0.137      334       11
+Medial OA               0.845      0.958      0.247      279       11
+Lateral OA              0.823      0.889      0.177      267       11
+PF OA                   0.811      0.833      0.224      292       11
+Effusion                0.910      0.833      0.286      213       11
+Synovitis               0.738      0.733      0.214      102       11
+Baker's                 0.738      1.000      0.174      188       11
+Contusion               0.803      0.667      0.134      212       11
+Fracture                0.714      0.667      0.069      131       11
+MACRO                   0.776      0.786      0.176
+17:56:05 INFO   fold 3 ep 17 step 20/46 | loss 0.3581 | lr 1.19e-04 | gnorm 0.741 | 2882 samples/s | gpu mem 0.26 GB
+17:56:05 INFO   fold 3 ep 17 step 40/46 | loss 0.3775 | lr 1.12e-04 | gnorm 0.914 | 3361 samples/s | gpu mem 0.26 GB
+17:56:05 INFO [fold 3] epoch 17: train loss 0.3759 | val loss 0.4482 | macro AUC llm 0.7806 | gold 0.7620 | pred std 0.2106 | 0m01s | elapsed 0m11s, ETA 0m07s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.725      0.750      0.174      332       11
+MCL                     0.775      0.722      0.106      330       11
+Medial Meniscus         0.746      0.750      0.265      335       11
+Lateral Meniscus        0.709      0.633      0.168      334       11
+Medial OA               0.841      1.000      0.267      279       11
+Lateral OA              0.827      1.000      0.220      267       11
+PF OA                   0.819      0.667      0.240      292       11
+Effusion                0.907      0.833      0.318      213       11
+Synovitis               0.741      0.733      0.253      102       11
+Baker's                 0.714      0.722      0.187      188       11
+Contusion               0.811      0.667      0.197      212       11
+Fracture                0.751      0.667      0.131      131       11
+MACRO                   0.781      0.762      0.211
+17:56:05 INFO   fold 3 ep 18 step 20/46 | loss 0.4278 | lr 1.03e-04 | gnorm 0.958 | 3067 samples/s | gpu mem 0.26 GB
+17:56:06 INFO   fold 3 ep 18 step 40/46 | loss 0.3731 | lr 9.65e-05 | gnorm 0.945 | 3221 samples/s | gpu mem 0.26 GB
+17:56:06 INFO [fold 3] epoch 18: train loss 0.3606 | val loss 0.4468 | macro AUC llm 0.7757 | gold 0.7773 | pred std 0.2001 | 0m01s | elapsed 0m11s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.730      0.714      0.189      332       11
+MCL                     0.764      0.667      0.093      330       11
+Medial Meniscus         0.746      0.750      0.262      335       11
+Lateral Meniscus        0.700      0.700      0.168      334       11
+Medial OA               0.843      0.958      0.272      279       11
+Lateral OA              0.816      1.000      0.200      267       11
+PF OA                   0.820      0.767      0.225      292       11
+Effusion                0.921      0.833      0.303      213       11
+Synovitis               0.712      0.800      0.205      102       11
+Baker's                 0.750      0.889      0.219      188       11
+Contusion               0.770      0.667      0.161      212       11
+Fracture                0.738      0.583      0.103      131       11
+MACRO                   0.776      0.777      0.200
+17:56:06 INFO   fold 3 ep 19 step 20/46 | loss 0.3087 | lr 8.80e-05 | gnorm 0.774 | 2897 samples/s | gpu mem 0.26 GB
+17:56:06 INFO   fold 3 ep 19 step 40/46 | loss 0.3264 | lr 8.16e-05 | gnorm 1.208 | 3243 samples/s | gpu mem 0.26 GB
+17:56:06 INFO [fold 3] epoch 19: train loss 0.3515 | val loss 0.4536 | macro AUC llm 0.7763 | gold 0.7980 | pred std 0.2197 | 0m01s | elapsed 0m12s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.718      0.857      0.164      332       11
+MCL                     0.765      0.778      0.100      330       11
+Medial Meniscus         0.743      0.750      0.263      335       11
+Lateral Meniscus        0.679      0.600      0.176      334       11
+Medial OA               0.845      0.917      0.317      279       11
+Lateral OA              0.818      1.000      0.255      267       11
+PF OA                   0.814      0.767      0.265      292       11
+Effusion                0.925      0.833      0.308      213       11
+Synovitis               0.719      0.867      0.259      102       11
+Baker's                 0.743      1.000      0.240      188       11
+Contusion               0.811      0.667      0.180      212       11
+Fracture                0.735      0.542      0.111      131       11
+MACRO                   0.776      0.798      0.220
+17:56:07 INFO   fold 3 ep 20 step 20/46 | loss 0.2994 | lr 7.36e-05 | gnorm 0.992 | 2955 samples/s | gpu mem 0.26 GB
+17:56:07 INFO   fold 3 ep 20 step 40/46 | loss 0.3417 | lr 6.76e-05 | gnorm 1.150 | 3205 samples/s | gpu mem 0.26 GB
+17:56:07 INFO [fold 3] epoch 20: train loss 0.3424 | val loss 0.4562 | macro AUC llm 0.7738 | gold 0.7735 | pred std 0.2206 | 0m01s | elapsed 0m12s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.732      0.786      0.183      332       11
+MCL                     0.742      0.833      0.114      330       11
+Medial Meniscus         0.728      0.821      0.255      335       11
+Lateral Meniscus        0.675      0.600      0.148      334       11
+Medial OA               0.835      1.000      0.310      279       11
+Lateral OA              0.836      1.000      0.238      267       11
+PF OA                   0.807      0.800      0.262      292       11
+Effusion                0.922      0.767      0.327      213       11
+Synovitis               0.742      0.800      0.267      102       11
+Baker's                 0.715      0.667      0.229      188       11
+Contusion               0.807      0.667      0.198      212       11
+Fracture                0.747      0.542      0.115      131       11
+MACRO                   0.774      0.774      0.221
+17:56:07 INFO   fold 3 ep 21 step 20/46 | loss 0.2808 | lr 6.01e-05 | gnorm 0.961 | 2907 samples/s | gpu mem 0.26 GB
+17:56:07 INFO   fold 3 ep 21 step 40/46 | loss 0.3326 | lr 5.45e-05 | gnorm 1.045 | 3067 samples/s | gpu mem 0.26 GB
+17:56:08 INFO [fold 3] epoch 21: train loss 0.3308 | val loss 0.4540 | macro AUC llm 0.7805 | gold 0.7683 | pred std 0.2303 | 0m01s | elapsed 0m13s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.731      0.714      0.205      332       11
+MCL                     0.757      0.667      0.113      330       11
+Medial Meniscus         0.746      0.786      0.291      335       11
+Lateral Meniscus        0.693      0.600      0.186      334       11
+Medial OA               0.835      0.958      0.316      279       11
+Lateral OA              0.834      1.000      0.255      267       11
+PF OA                   0.800      0.867      0.273      292       11
+Effusion                0.924      0.800      0.313      213       11
+Synovitis               0.730      0.800      0.265      102       11
+Baker's                 0.746      0.778      0.235      188       11
+Contusion               0.809      0.667      0.180      212       11
+Fracture                0.761      0.583      0.133      131       11
+MACRO                   0.780      0.768      0.230
+17:56:08 INFO   fold 3 ep 22 step 20/46 | loss 0.3248 | lr 4.76e-05 | gnorm 0.929 | 2894 samples/s | gpu mem 0.26 GB
+17:56:08 INFO   fold 3 ep 22 step 40/46 | loss 0.3204 | lr 4.26e-05 | gnorm 0.994 | 3257 samples/s | gpu mem 0.26 GB
+17:56:08 INFO [fold 3] epoch 22: train loss 0.3223 | val loss 0.4564 | macro AUC llm 0.7804 | gold 0.7879 | pred std 0.2394 | 0m01s | elapsed 0m14s, ETA 0m04s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.722      0.786      0.180      332       11
+MCL                     0.757      0.889      0.139      330       11
+Medial Meniscus         0.742      0.786      0.280      335       11
+Lateral Meniscus        0.668      0.533      0.183      334       11
+Medial OA               0.838      0.958      0.324      279       11
+Lateral OA              0.835      1.000      0.274      267       11
+PF OA                   0.810      0.867      0.291      292       11
+Effusion                0.926      0.733      0.312      213       11
+Synovitis               0.746      0.833      0.263      102       11
+Baker's                 0.749      0.778      0.259      188       11
+Contusion               0.820      0.667      0.211      212       11
+Fracture                0.751      0.625      0.156      131       11
+MACRO                   0.780      0.788      0.239
+17:56:08 INFO   fold 3 ep 23 step 20/46 | loss 0.2976 | lr 3.64e-05 | gnorm 1.101 | 2880 samples/s | gpu mem 0.26 GB
+17:56:09 INFO   fold 3 ep 23 step 40/46 | loss 0.2873 | lr 3.19e-05 | gnorm 0.856 | 3278 samples/s | gpu mem 0.26 GB
+17:56:09 INFO [fold 3] epoch 23: train loss 0.3121 | val loss 0.4582 | macro AUC llm 0.7811 | gold 0.7847 | pred std 0.2389 | 0m01s | elapsed 0m14s, ETA 0m04s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.747      0.714      0.233      332       11
+MCL                     0.736      0.833      0.121      330       11
+Medial Meniscus         0.751      0.821      0.282      335       11
+Lateral Meniscus        0.708      0.567      0.207      334       11
+Medial OA               0.836      0.958      0.311      279       11
+Lateral OA              0.837      1.000      0.264      267       11
+PF OA                   0.801      0.867      0.284      292       11
+Effusion                0.927      0.800      0.326      213       11
+Synovitis               0.739      0.800      0.275      102       11
+Baker's                 0.725      0.722      0.223      188       11
+Contusion               0.823      0.667      0.195      212       11
+Fracture                0.744      0.667      0.147      131       11
+MACRO                   0.781      0.785      0.239
+17:56:09 INFO   fold 3 ep 24 step 20/46 | loss 0.3676 | lr 2.64e-05 | gnorm 1.205 | 3107 samples/s | gpu mem 0.26 GB
+17:56:09 INFO   fold 3 ep 24 step 40/46 | loss 0.2965 | lr 2.26e-05 | gnorm 0.814 | 3332 samples/s | gpu mem 0.26 GB
+17:56:09 INFO [fold 3] epoch 24: train loss 0.3042 | val loss 0.4562 | macro AUC llm 0.7805 | gold 0.7837 | pred std 0.2359 | 0m01s | elapsed 0m15s, ETA 0m03s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.737      0.750      0.203      332       11
+MCL                     0.748      0.833      0.124      330       11
+Medial Meniscus         0.744      0.821      0.283      335       11
+Lateral Meniscus        0.681      0.533      0.185      334       11
+Medial OA               0.836      0.958      0.321      279       11
+Lateral OA              0.838      1.000      0.272      267       11
+PF OA                   0.805      0.867      0.288      292       11
+Effusion                0.928      0.800      0.319      213       11
+Synovitis               0.744      0.800      0.272      102       11
+Baker's                 0.735      0.833      0.247      188       11
+Contusion               0.820      0.667      0.186      212       11
+Fracture                0.749      0.542      0.131      131       11
+MACRO                   0.781      0.784      0.236
+17:56:09 INFO   fold 3 ep 25 step 20/46 | loss 0.2983 | lr 1.80e-05 | gnorm 0.873 | 2902 samples/s | gpu mem 0.26 GB
+17:56:10 INFO   fold 3 ep 25 step 40/46 | loss 0.2909 | lr 1.48e-05 | gnorm 0.843 | 3294 samples/s | gpu mem 0.26 GB
+17:56:10 INFO [fold 3] epoch 25: train loss 0.2976 | val loss 0.4564 | macro AUC llm 0.7788 | gold 0.7833 | pred std 0.2319 | 0m01s | elapsed 0m15s, ETA 0m02s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.746      0.750      0.210      332       11
+MCL                     0.739      0.889      0.117      330       11
+Medial Meniscus         0.743      0.821      0.289      335       11
+Lateral Meniscus        0.683      0.533      0.177      334       11
+Medial OA               0.832      0.958      0.310      279       11
+Lateral OA              0.830      1.000      0.249      267       11
+PF OA                   0.803      0.833      0.281      292       11
+Effusion                0.928      0.800      0.320      213       11
+Synovitis               0.730      0.800      0.259      102       11
+Baker's                 0.735      0.722      0.243      188       11
+Contusion               0.817      0.667      0.189      212       11
+Fracture                0.760      0.625      0.138      131       11
+MACRO                   0.779      0.783      0.232
+17:56:10 INFO   fold 3 ep 26 step 20/46 | loss 0.2534 | lr 1.10e-05 | gnorm 0.829 | 3118 samples/s | gpu mem 0.26 GB
+17:56:10 INFO   fold 3 ep 26 step 40/46 | loss 0.3086 | lr 8.54e-06 | gnorm 0.903 | 3306 samples/s | gpu mem 0.26 GB
+17:56:10 INFO [fold 3] epoch 26: train loss 0.2937 | val loss 0.4587 | macro AUC llm 0.7791 | gold 0.7747 | pred std 0.2342 | 0m01s | elapsed 0m16s, ETA 0m02s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.744      0.786      0.208      332       11
+MCL                     0.734      0.833      0.103      330       11
+Medial Meniscus         0.741      0.821      0.285      335       11
+Lateral Meniscus        0.684      0.533      0.186      334       11
+Medial OA               0.832      0.917      0.317      279       11
+Lateral OA              0.833      1.000      0.262      267       11
+PF OA                   0.800      0.867      0.288      292       11
+Effusion                0.928      0.733      0.320      213       11
+Synovitis               0.741      0.833      0.271      102       11
+Baker's                 0.738      0.722      0.246      188       11
+Contusion               0.821      0.667      0.190      212       11
+Fracture                0.753      0.583      0.136      131       11
+MACRO                   0.779      0.775      0.234
+17:56:11 INFO   fold 3 ep 27 step 20/46 | loss 0.3379 | lr 5.75e-06 | gnorm 0.966 | 3000 samples/s | gpu mem 0.26 GB
+17:56:11 INFO   fold 3 ep 27 step 40/46 | loss 0.3062 | lr 3.98e-06 | gnorm 1.118 | 3237 samples/s | gpu mem 0.26 GB
+17:56:11 INFO [fold 3] epoch 27: train loss 0.2907 | val loss 0.4587 | macro AUC llm 0.7792 | gold 0.7879 | pred std 0.2381 | 0m01s | elapsed 0m16s, ETA 0m01s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.748      0.750      0.213      332       11
+MCL                     0.738      0.889      0.130      330       11
+Medial Meniscus         0.740      0.821      0.287      335       11
+Lateral Meniscus        0.682      0.533      0.179      334       11
+Medial OA               0.831      0.958      0.319      279       11
+Lateral OA              0.833      1.000      0.263      267       11
+PF OA                   0.801      0.833      0.289      292       11
+Effusion                0.928      0.767      0.318      213       11
+Synovitis               0.738      0.833      0.267      102       11
+Baker's                 0.737      0.778      0.251      188       11
+Contusion               0.824      0.667      0.200      212       11
+Fracture                0.749      0.625      0.142      131       11
+MACRO                   0.779      0.788      0.238
+17:56:11 INFO   fold 3 ep 28 step 20/46 | loss 0.2647 | lr 2.15e-06 | gnorm 0.861 | 2716 samples/s | gpu mem 0.26 GB
+17:56:11 INFO   fold 3 ep 28 step 40/46 | loss 0.2862 | lr 1.12e-06 | gnorm 1.148 | 3079 samples/s | gpu mem 0.26 GB
+17:56:12 INFO [fold 3] epoch 28: train loss 0.2891 | val loss 0.4600 | macro AUC llm 0.7797 | gold 0.7874 | pred std 0.2401 | 0m01s | elapsed 0m17s, ETA 0m01s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.749      0.786      0.217      332       11
+MCL                     0.739      0.889      0.129      330       11
+Medial Meniscus         0.740      0.821      0.287      335       11
+Lateral Meniscus        0.685      0.533      0.189      334       11
+Medial OA               0.831      0.917      0.321      279       11
+Lateral OA              0.833      1.000      0.269      267       11
+PF OA                   0.800      0.867      0.291      292       11
+Effusion                0.928      0.733      0.319      213       11
+Synovitis               0.740      0.833      0.269      102       11
+Baker's                 0.736      0.778      0.252      188       11
+Contusion               0.823      0.667      0.198      212       11
+Fracture                0.752      0.625      0.140      131       11
+MACRO                   0.780      0.787      0.240
+17:56:12 INFO   fold 3 ep 29 step 20/46 | loss 0.3260 | lr 2.81e-07 | gnorm 0.996 | 2956 samples/s | gpu mem 0.26 GB
+17:56:12 INFO   fold 3 ep 29 step 40/46 | loss 0.2719 | lr 1.50e-08 | gnorm 0.965 | 3211 samples/s | gpu mem 0.26 GB
+17:56:12 INFO [fold 3] epoch 29: train loss 0.2886 | val loss 0.4599 | macro AUC llm 0.7794 | gold 0.7874 | pred std 0.2396 | 0m01s | elapsed 0m18s, ETA 0m00s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.748      0.786      0.216      332       11
+MCL                     0.738      0.889      0.127      330       11
+Medial Meniscus         0.740      0.821      0.288      335       11
+Lateral Meniscus        0.684      0.533      0.188      334       11
+Medial OA               0.831      0.917      0.322      279       11
+Lateral OA              0.832      1.000      0.268      267       11
+PF OA                   0.800      0.867      0.291      292       11
+Effusion                0.928      0.733      0.319      213       11
+Synovitis               0.739      0.833      0.269      102       11
+Baker's                 0.737      0.778      0.252      188       11
+Contusion               0.823      0.667      0.197      212       11
+Fracture                0.751      0.625      0.139      131       11
+MACRO                   0.779      0.787      0.240
+17:56:12 INFO [fold 3] best epoch 23 | macro AUC llm 0.7811 | gold 0.7847 | checkpoint /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold3/best.pt | OOF /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold3/oof.csv
+17:56:12 INFO [fold 4] train 1505 / val 365 studies (gold in val: 13) | 2.84M params | 47 steps/epoch x 30 epochs | mirror_aug 0.0
+17:56:13 INFO   fold 4 ep 0 step 20/47 | loss 0.4758 | lr 1.34e-04 | gnorm 0.824 | 2379 samples/s | gpu mem 0.26 GB
+17:56:13 INFO   fold 4 ep 0 step 40/47 | loss 0.5149 | lr 2.62e-04 | gnorm 0.473 | 3460 samples/s | gpu mem 0.26 GB
+17:56:13 INFO [fold 4] epoch 0: train loss 0.5516 | val loss 0.5386 | macro AUC llm 0.6012 | gold 0.5351 | pred std 0.0059 | 0m01s | elapsed 0m01s, ETA 0m20s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.562      0.405      0.004      303       13
+MCL                     0.520      0.591      0.001      304       13
+Medial Meniscus         0.673      0.762      0.007      319       13
+Lateral Meniscus        0.648      0.650      0.004      300       13
+Medial OA               0.711      0.667      0.012      270       13
+Lateral OA              0.695      0.273      0.006      256       13
+PF OA                   0.761      0.472      0.011      276       13
+Effusion                0.629      0.611      0.004      205       13
+Synovitis               0.675      0.850      0.005       94       13
+Baker's                 0.672      0.091      0.008      176       13
+Contusion               0.469      0.417      0.008      230       13
+Fracture                0.200      0.633      0.002      121       13
+MACRO                   0.601      0.535      0.006
+17:56:13 WARNING !!! COLLAPSE WARNING: mean per-label std of val predictions is 0.0059 (< 0.02): predictions are collapsing to the base rate
+17:56:13 INFO   fold 4 ep 1 step 20/47 | loss 0.5637 | lr 3.00e-04 | gnorm 0.626 | 2826 samples/s | gpu mem 0.26 GB
+17:56:13 INFO   fold 4 ep 1 step 40/47 | loss 0.5297 | lr 2.99e-04 | gnorm 0.548 | 3300 samples/s | gpu mem 0.26 GB
+17:56:14 INFO [fold 4] epoch 1: train loss 0.5126 | val loss 0.5206 | macro AUC llm 0.6517 | gold 0.5845 | pred std 0.0741 | 0m01s | elapsed 0m01s, ETA 0m18s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.485      0.619      0.027      303       13
+MCL                     0.411      0.409      0.017      304       13
+Medial Meniscus         0.690      0.786      0.084      319       13
+Lateral Meniscus        0.615      0.550      0.047      300       13
+Medial OA               0.763      0.733      0.161      270       13
+Lateral OA              0.729      0.500      0.101      256       13
+PF OA                   0.782      0.472      0.139      276       13
+Effusion                0.797      0.722      0.056      205       13
+Synovitis               0.770      0.875      0.080       94       13
+Baker's                 0.716      0.364      0.104      176       13
+Contusion               0.418      0.417      0.051      230       13
+Fracture                0.645      0.567      0.021      121       13
+MACRO                   0.652      0.584      0.074
+17:56:14 INFO   fold 4 ep 2 step 20/47 | loss 0.5708 | lr 2.98e-04 | gnorm 0.583 | 2868 samples/s | gpu mem 0.26 GB
+17:56:14 INFO   fold 4 ep 2 step 40/47 | loss 0.4502 | lr 2.97e-04 | gnorm 0.445 | 3169 samples/s | gpu mem 0.26 GB
+17:56:14 INFO [fold 4] epoch 2: train loss 0.4986 | val loss 0.5164 | macro AUC llm 0.6635 | gold 0.5632 | pred std 0.0966 | 0m01s | elapsed 0m02s, ETA 0m17s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.540      0.405      0.031      303       13
+MCL                     0.432      0.409      0.038      304       13
+Medial Meniscus         0.700      0.714      0.144      319       13
+Lateral Meniscus        0.581      0.475      0.054      300       13
+Medial OA               0.783      0.767      0.169      270       13
+Lateral OA              0.735      0.545      0.100      256       13
+PF OA                   0.781      0.528      0.129      276       13
+Effusion                0.816      0.667      0.146      205       13
+Synovitis               0.804      0.825      0.127       94       13
+Baker's                 0.709      0.545      0.118      176       13
+Contusion               0.427      0.444      0.073      230       13
+Fracture                0.654      0.433      0.028      121       13
+MACRO                   0.663      0.563      0.097
+17:56:14 INFO   fold 4 ep 3 step 20/47 | loss 0.4170 | lr 2.95e-04 | gnorm 0.402 | 3028 samples/s | gpu mem 0.26 GB
+17:56:15 INFO   fold 4 ep 3 step 40/47 | loss 0.5322 | lr 2.93e-04 | gnorm 0.730 | 3377 samples/s | gpu mem 0.26 GB
+17:56:15 INFO [fold 4] epoch 3: train loss 0.4763 | val loss 0.4960 | macro AUC llm 0.7479 | gold 0.5728 | pred std 0.1432 | 0m01s | elapsed 0m02s, ETA 0m16s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.678      0.310      0.053      303       13
+MCL                     0.696      0.500      0.043      304       13
+Medial Meniscus         0.701      0.786      0.215      319       13
+Lateral Meniscus        0.684      0.450      0.097      300       13
+Medial OA               0.779      0.733      0.254      270       13
+Lateral OA              0.746      0.455      0.172      256       13
+PF OA                   0.792      0.556      0.208      276       13
+Effusion                0.849      0.750      0.197      205       13
+Synovitis               0.791      0.900      0.180       94       13
+Baker's                 0.728      0.591      0.191      176       13
+Contusion               0.683      0.444      0.043      230       13
+Fracture                0.848      0.400      0.064      121       13
+MACRO                   0.748      0.573      0.143
+17:56:15 INFO   fold 4 ep 4 step 20/47 | loss 0.5382 | lr 2.90e-04 | gnorm 0.854 | 3111 samples/s | gpu mem 0.26 GB
+17:56:15 INFO   fold 4 ep 4 step 40/47 | loss 0.4076 | lr 2.87e-04 | gnorm 0.588 | 3404 samples/s | gpu mem 0.26 GB
+17:56:15 INFO [fold 4] epoch 4: train loss 0.4720 | val loss 0.4880 | macro AUC llm 0.7673 | gold 0.5863 | pred std 0.1235 | 0m01s | elapsed 0m03s, ETA 0m15s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.697      0.381      0.050      303       13
+MCL                     0.695      0.364      0.030      304       13
+Medial Meniscus         0.723      0.810      0.160      319       13
+Lateral Meniscus        0.689      0.500      0.107      300       13
+Medial OA               0.808      0.700      0.186      270       13
+Lateral OA              0.763      0.545      0.127      256       13
+PF OA                   0.815      0.583      0.160      276       13
+Effusion                0.881      0.833      0.220      205       13
+Synovitis               0.826      0.825      0.148       94       13
+Baker's                 0.719      0.727      0.152      176       13
+Contusion               0.730      0.500      0.060      230       13
+Fracture                0.862      0.267      0.081      121       13
+MACRO                   0.767      0.586      0.123
+17:56:16 INFO   fold 4 ep 5 step 20/47 | loss 0.3633 | lr 2.83e-04 | gnorm 0.453 | 3097 samples/s | gpu mem 0.26 GB
+17:56:16 INFO   fold 4 ep 5 step 40/47 | loss 0.4657 | lr 2.80e-04 | gnorm 0.817 | 3333 samples/s | gpu mem 0.26 GB
+17:56:16 INFO [fold 4] epoch 5: train loss 0.4671 | val loss 0.4913 | macro AUC llm 0.7599 | gold 0.5830 | pred std 0.1133 | 0m01s | elapsed 0m04s, ETA 0m15s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.732      0.476      0.085      303       13
+MCL                     0.682      0.091      0.039      304       13
+Medial Meniscus         0.700      0.738      0.139      319       13
+Lateral Meniscus        0.678      0.350      0.076      300       13
+Medial OA               0.808      0.667      0.189      270       13
+Lateral OA              0.764      0.545      0.121      256       13
+PF OA                   0.811      0.556      0.148      276       13
+Effusion                0.848      0.889      0.155      205       13
+Synovitis               0.837      0.850      0.107       94       13
+Baker's                 0.744      0.773      0.144      176       13
+Contusion               0.736      0.528      0.077      230       13
+Fracture                0.778      0.533      0.079      121       13
+MACRO                   0.760      0.583      0.113
+17:56:16 INFO   fold 4 ep 6 step 20/47 | loss 0.4902 | lr 2.75e-04 | gnorm 0.753 | 3021 samples/s | gpu mem 0.26 GB
+17:56:16 INFO   fold 4 ep 6 step 40/47 | loss 0.4702 | lr 2.71e-04 | gnorm 0.478 | 3371 samples/s | gpu mem 0.26 GB
+17:56:16 INFO [fold 4] epoch 6: train loss 0.4592 | val loss 0.4843 | macro AUC llm 0.7657 | gold 0.5945 | pred std 0.1355 | 0m01s | elapsed 0m04s, ETA 0m14s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.732      0.500      0.048      303       13
+MCL                     0.667      0.227      0.023      304       13
+Medial Meniscus         0.728      0.762      0.159      319       13
+Lateral Meniscus        0.694      0.525      0.121      300       13
+Medial OA               0.821      0.667      0.231      270       13
+Lateral OA              0.776      0.636      0.171      256       13
+PF OA                   0.809      0.694      0.185      276       13
+Effusion                0.889      0.806      0.241      205       13
+Synovitis               0.809      0.800      0.204       94       13
+Baker's                 0.734      0.773      0.112      176       13
+Contusion               0.677      0.444      0.062      230       13
+Fracture                0.850      0.300      0.068      121       13
+MACRO                   0.766      0.595      0.136
+17:56:17 INFO   fold 4 ep 7 step 20/47 | loss 0.4338 | lr 2.65e-04 | gnorm 0.459 | 2960 samples/s | gpu mem 0.26 GB
+17:56:17 INFO   fold 4 ep 7 step 40/47 | loss 0.4238 | lr 2.61e-04 | gnorm 0.842 | 3242 samples/s | gpu mem 0.26 GB
+17:56:17 INFO [fold 4] epoch 7: train loss 0.4525 | val loss 0.4942 | macro AUC llm 0.7688 | gold 0.6310 | pred std 0.1262 | 0m01s | elapsed 0m05s, ETA 0m13s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.759      0.571      0.118      303       13
+MCL                     0.679      0.091      0.048      304       13
+Medial Meniscus         0.729      0.810      0.176      319       13
+Lateral Meniscus        0.695      0.525      0.092      300       13
+Medial OA               0.825      0.633      0.160      270       13
+Lateral OA              0.766      0.591      0.110      256       13
+PF OA                   0.826      0.556      0.128      276       13
+Effusion                0.897      0.972      0.210      205       13
+Synovitis               0.822      0.950      0.132       94       13
+Baker's                 0.741      0.773      0.122      176       13
+Contusion               0.769      0.500      0.130      230       13
+Fracture                0.717      0.600      0.088      121       13
+MACRO                   0.769      0.631      0.126
+17:56:17 INFO   fold 4 ep 8 step 20/47 | loss 0.4731 | lr 2.54e-04 | gnorm 0.615 | 3022 samples/s | gpu mem 0.26 GB
+17:56:18 INFO   fold 4 ep 8 step 40/47 | loss 0.4343 | lr 2.49e-04 | gnorm 0.876 | 3019 samples/s | gpu mem 0.26 GB
+17:56:18 INFO [fold 4] epoch 8: train loss 0.4422 | val loss 0.4810 | macro AUC llm 0.7777 | gold 0.6305 | pred std 0.1317 | 0m01s | elapsed 0m05s, ETA 0m13s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.749      0.619      0.087      303       13
+MCL                     0.704      0.136      0.031      304       13
+Medial Meniscus         0.746      0.810      0.172      319       13
+Lateral Meniscus        0.706      0.525      0.097      300       13
+Medial OA               0.839      0.767      0.206      270       13
+Lateral OA              0.782      0.591      0.118      256       13
+PF OA                   0.827      0.583      0.165      276       13
+Effusion                0.898      0.917      0.242      205       13
+Synovitis               0.821      0.875      0.170       94       13
+Baker's                 0.704      0.682      0.126      176       13
+Contusion               0.762      0.528      0.101      230       13
+Fracture                0.793      0.533      0.065      121       13
+MACRO                   0.778      0.630      0.132
+17:56:18 INFO   fold 4 ep 9 step 20/47 | loss 0.4852 | lr 2.42e-04 | gnorm 0.721 | 2947 samples/s | gpu mem 0.26 GB
+17:56:18 INFO   fold 4 ep 9 step 40/47 | loss 0.5290 | lr 2.36e-04 | gnorm 1.229 | 3362 samples/s | gpu mem 0.26 GB
+17:56:18 INFO [fold 4] epoch 9: train loss 0.4379 | val loss 0.4731 | macro AUC llm 0.7736 | gold 0.6364 | pred std 0.1569 | 0m01s | elapsed 0m06s, ETA 0m12s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.755      0.643      0.100      303       13
+MCL                     0.675      0.182      0.049      304       13
+Medial Meniscus         0.732      0.738      0.152      319       13
+Lateral Meniscus        0.698      0.550      0.111      300       13
+Medial OA               0.846      0.767      0.243      270       13
+Lateral OA              0.788      0.545      0.204      256       13
+PF OA                   0.836      0.556      0.218      276       13
+Effusion                0.896      0.972      0.235      205       13
+Synovitis               0.811      0.925      0.212       94       13
+Baker's                 0.713      0.636      0.151      176       13
+Contusion               0.765      0.556      0.131      230       13
+Fracture                0.769      0.567      0.077      121       13
+MACRO                   0.774      0.636      0.157
+17:56:19 INFO   fold 4 ep 10 step 20/47 | loss 0.4811 | lr 2.28e-04 | gnorm 0.699 | 2937 samples/s | gpu mem 0.26 GB
+17:56:19 INFO   fold 4 ep 10 step 40/47 | loss 0.4066 | lr 2.22e-04 | gnorm 0.474 | 3239 samples/s | gpu mem 0.26 GB
+17:56:19 INFO [fold 4] epoch 10: train loss 0.4278 | val loss 0.4794 | macro AUC llm 0.7833 | gold 0.6222 | pred std 0.1973 | 0m01s | elapsed 0m07s, ETA 0m11s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.764      0.595      0.209      303       13
+MCL                     0.714      0.091      0.134      304       13
+Medial Meniscus         0.761      0.833      0.178      319       13
+Lateral Meniscus        0.695      0.625      0.133      300       13
+Medial OA               0.842      0.733      0.231      270       13
+Lateral OA              0.782      0.682      0.175      256       13
+PF OA                   0.835      0.500      0.227      276       13
+Effusion                0.904      0.944      0.273      205       13
+Synovitis               0.796      0.800      0.205       94       13
+Baker's                 0.694      0.545      0.161      176       13
+Contusion               0.789      0.583      0.234      230       13
+Fracture                0.824      0.533      0.206      121       13
+MACRO                   0.783      0.622      0.197
+17:56:19 INFO   fold 4 ep 11 step 20/47 | loss 0.3489 | lr 2.14e-04 | gnorm 0.579 | 2933 samples/s | gpu mem 0.26 GB
+17:56:19 INFO   fold 4 ep 11 step 40/47 | loss 0.3764 | lr 2.08e-04 | gnorm 0.701 | 3345 samples/s | gpu mem 0.26 GB
+17:56:19 INFO [fold 4] epoch 11: train loss 0.4226 | val loss 0.4669 | macro AUC llm 0.7812 | gold 0.6302 | pred std 0.1750 | 0m01s | elapsed 0m07s, ETA 0m11s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.779      0.714      0.162      303       13
+MCL                     0.728      0.182      0.076      304       13
+Medial Meniscus         0.751      0.762      0.176      319       13
+Lateral Meniscus        0.711      0.475      0.147      300       13
+Medial OA               0.859      0.767      0.243      270       13
+Lateral OA              0.794      0.591      0.174      256       13
+PF OA                   0.840      0.611      0.202      276       13
+Effusion                0.899      0.944      0.251      205       13
+Synovitis               0.775      0.775      0.181       94       13
+Baker's                 0.729      0.591      0.171      176       13
+Contusion               0.771      0.583      0.171      230       13
+Fracture                0.739      0.567      0.144      121       13
+MACRO                   0.781      0.630      0.175
+17:56:20 INFO   fold 4 ep 12 step 20/47 | loss 0.3675 | lr 1.99e-04 | gnorm 0.374 | 2957 samples/s | gpu mem 0.26 GB
+17:56:20 INFO   fold 4 ep 12 step 40/47 | loss 0.3948 | lr 1.92e-04 | gnorm 0.815 | 3324 samples/s | gpu mem 0.26 GB
+17:56:20 INFO [fold 4] epoch 12: train loss 0.4141 | val loss 0.4727 | macro AUC llm 0.7933 | gold 0.6387 | pred std 0.1937 | 0m01s | elapsed 0m08s, ETA 0m10s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.789      0.714      0.165      303       13
+MCL                     0.750      0.182      0.069      304       13
+Medial Meniscus         0.748      0.762      0.211      319       13
+Lateral Meniscus        0.702      0.500      0.140      300       13
+Medial OA               0.860      0.767      0.303      270       13
+Lateral OA              0.794      0.545      0.257      256       13
+PF OA                   0.842      0.611      0.219      276       13
+Effusion                0.906      0.944      0.273      205       13
+Synovitis               0.782      0.825      0.188       94       13
+Baker's                 0.747      0.636      0.225      176       13
+Contusion               0.795      0.611      0.159      230       13
+Fracture                0.805      0.567      0.114      121       13
+MACRO                   0.793      0.639      0.194
+17:56:20 INFO   fold 4 ep 13 step 20/47 | loss 0.3670 | lr 1.83e-04 | gnorm 0.508 | 2919 samples/s | gpu mem 0.26 GB
+17:56:21 INFO   fold 4 ep 13 step 40/47 | loss 0.4032 | lr 1.77e-04 | gnorm 0.691 | 3153 samples/s | gpu mem 0.26 GB
+17:56:21 INFO [fold 4] epoch 13: train loss 0.4069 | val loss 0.4611 | macro AUC llm 0.7980 | gold 0.6456 | pred std 0.1986 | 0m01s | elapsed 0m08s, ETA 0m10s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.792      0.690      0.181      303       13
+MCL                     0.712      0.227      0.081      304       13
+Medial Meniscus         0.759      0.762      0.209      319       13
+Lateral Meniscus        0.710      0.650      0.151      300       13
+Medial OA               0.869      0.733      0.263      270       13
+Lateral OA              0.796      0.636      0.233      256       13
+PF OA                   0.845      0.639      0.225      276       13
+Effusion                0.913      0.889      0.281      205       13
+Synovitis               0.789      0.800      0.235       94       13
+Baker's                 0.755      0.636      0.156      176       13
+Contusion               0.795      0.583      0.196      230       13
+Fracture                0.840      0.500      0.171      121       13
+MACRO                   0.798      0.646      0.199
+17:56:21 INFO   fold 4 ep 14 step 20/47 | loss 0.4449 | lr 1.67e-04 | gnorm 0.623 | 2856 samples/s | gpu mem 0.26 GB
+17:56:21 INFO   fold 4 ep 14 step 40/47 | loss 0.3975 | lr 1.61e-04 | gnorm 0.694 | 3360 samples/s | gpu mem 0.26 GB
+17:56:21 INFO [fold 4] epoch 14: train loss 0.3961 | val loss 0.4664 | macro AUC llm 0.7935 | gold 0.6332 | pred std 0.2046 | 0m01s | elapsed 0m09s, ETA 0m09s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.793      0.690      0.227      303       13
+MCL                     0.751      0.136      0.081      304       13
+Medial Meniscus         0.764      0.786      0.228      319       13
+Lateral Meniscus        0.707      0.550      0.204      300       13
+Medial OA               0.871      0.767      0.230      270       13
+Lateral OA              0.779      0.636      0.161      256       13
+PF OA                   0.831      0.611      0.237      276       13
+Effusion                0.905      0.889      0.273      205       13
+Synovitis               0.772      0.850      0.221       94       13
+Baker's                 0.732      0.500      0.209      176       13
+Contusion               0.820      0.583      0.214      230       13
+Fracture                0.798      0.600      0.170      121       13
+MACRO                   0.794      0.633      0.205
+17:56:21 INFO   fold 4 ep 15 step 20/47 | loss 0.4188 | lr 1.51e-04 | gnorm 1.030 | 3028 samples/s | gpu mem 0.26 GB
+17:56:22 INFO   fold 4 ep 15 step 40/47 | loss 0.3626 | lr 1.44e-04 | gnorm 0.617 | 3333 samples/s | gpu mem 0.26 GB
+17:56:22 INFO [fold 4] epoch 15: train loss 0.3881 | val loss 0.4706 | macro AUC llm 0.7987 | gold 0.6516 | pred std 0.1942 | 0m01s | elapsed 0m10s, ETA 0m08s  *best*
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.794      0.667      0.152      303       13
+MCL                     0.737      0.273      0.065      304       13
+Medial Meniscus         0.760      0.738      0.216      319       13
+Lateral Meniscus        0.735      0.575      0.126      300       13
+Medial OA               0.859      0.767      0.286      270       13
+Lateral OA              0.798      0.636      0.226      256       13
+PF OA                   0.848      0.611      0.225      276       13
+Effusion                0.907      0.917      0.269      205       13
+Synovitis               0.778      0.900      0.234       94       13
+Baker's                 0.727      0.591      0.220      176       13
+Contusion               0.800      0.611      0.154      230       13
+Fracture                0.840      0.533      0.157      121       13
+MACRO                   0.799      0.652      0.194
+17:56:22 INFO   fold 4 ep 16 step 20/47 | loss 0.4192 | lr 1.35e-04 | gnorm 0.593 | 3047 samples/s | gpu mem 0.26 GB
+17:56:22 INFO   fold 4 ep 16 step 40/47 | loss 0.3720 | lr 1.28e-04 | gnorm 0.681 | 3347 samples/s | gpu mem 0.26 GB
+17:56:22 INFO [fold 4] epoch 16: train loss 0.3824 | val loss 0.4716 | macro AUC llm 0.7943 | gold 0.6517 | pred std 0.2272 | 0m01s | elapsed 0m10s, ETA 0m08s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.793      0.786      0.194      303       13
+MCL                     0.738      0.091      0.098      304       13
+Medial Meniscus         0.771      0.690      0.252      319       13
+Lateral Meniscus        0.729      0.525      0.161      300       13
+Medial OA               0.865      0.733      0.336      270       13
+Lateral OA              0.793      0.682      0.286      256       13
+PF OA                   0.851      0.722      0.283      276       13
+Effusion                0.907      0.944      0.309      205       13
+Synovitis               0.745      0.850      0.286       94       13
+Baker's                 0.752      0.591      0.210      176       13
+Contusion               0.775      0.639      0.163      230       13
+Fracture                0.814      0.567      0.149      121       13
+MACRO                   0.794      0.652      0.227
+17:56:23 INFO   fold 4 ep 17 step 20/47 | loss 0.3847 | lr 1.19e-04 | gnorm 0.512 | 2920 samples/s | gpu mem 0.26 GB
+17:56:23 INFO   fold 4 ep 17 step 40/47 | loss 0.4171 | lr 1.12e-04 | gnorm 0.617 | 3289 samples/s | gpu mem 0.26 GB
+17:56:23 INFO [fold 4] epoch 17: train loss 0.3727 | val loss 0.4627 | macro AUC llm 0.7972 | gold 0.6511 | pred std 0.2235 | 0m01s | elapsed 0m11s, ETA 0m07s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.785      0.762      0.211      303       13
+MCL                     0.749      0.091      0.124      304       13
+Medial Meniscus         0.782      0.762      0.239      319       13
+Lateral Meniscus        0.721      0.625      0.191      300       13
+Medial OA               0.872      0.800      0.273      270       13
+Lateral OA              0.791      0.682      0.242      256       13
+PF OA                   0.854      0.611      0.264      276       13
+Effusion                0.907      0.944      0.286      205       13
+Synovitis               0.762      0.925      0.260       94       13
+Baker's                 0.748      0.500      0.236      176       13
+Contusion               0.776      0.611      0.201      230       13
+Fracture                0.822      0.500      0.155      121       13
+MACRO                   0.797      0.651      0.223
+17:56:23 INFO   fold 4 ep 18 step 20/47 | loss 0.3697 | lr 1.03e-04 | gnorm 0.574 | 2988 samples/s | gpu mem 0.26 GB
+17:56:23 INFO   fold 4 ep 18 step 40/47 | loss 0.3431 | lr 9.67e-05 | gnorm 1.388 | 3311 samples/s | gpu mem 0.26 GB
+17:56:24 INFO [fold 4] epoch 18: train loss 0.3582 | val loss 0.4676 | macro AUC llm 0.7876 | gold 0.6406 | pred std 0.2175 | 0m01s | elapsed 0m11s, ETA 0m07s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.776      0.714      0.202      303       13
+MCL                     0.720      0.091      0.079      304       13
+Medial Meniscus         0.772      0.690      0.254      319       13
+Lateral Meniscus        0.739      0.575      0.175      300       13
+Medial OA               0.861      0.700      0.288      270       13
+Lateral OA              0.783      0.727      0.218      256       13
+PF OA                   0.836      0.583      0.264      276       13
+Effusion                0.915      0.944      0.302      205       13
+Synovitis               0.726      0.875      0.262       94       13
+Baker's                 0.745      0.636      0.234      176       13
+Contusion               0.773      0.583      0.187      230       13
+Fracture                0.806      0.567      0.146      121       13
+MACRO                   0.788      0.641      0.217
+17:56:24 INFO   fold 4 ep 19 step 20/47 | loss 0.4584 | lr 8.81e-05 | gnorm 1.333 | 3022 samples/s | gpu mem 0.26 GB
+17:56:24 INFO   fold 4 ep 19 step 40/47 | loss 0.3152 | lr 8.19e-05 | gnorm 0.824 | 3354 samples/s | gpu mem 0.26 GB
+17:56:24 INFO [fold 4] epoch 19: train loss 0.3467 | val loss 0.4662 | macro AUC llm 0.7885 | gold 0.6543 | pred std 0.2235 | 0m01s | elapsed 0m12s, ETA 0m06s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.776      0.714      0.208      303       13
+MCL                     0.747      0.091      0.094      304       13
+Medial Meniscus         0.789      0.738      0.272      319       13
+Lateral Meniscus        0.722      0.575      0.172      300       13
+Medial OA               0.874      0.800      0.301      270       13
+Lateral OA              0.784      0.682      0.227      256       13
+PF OA                   0.837      0.583      0.259      276       13
+Effusion                0.911      0.944      0.288      205       13
+Synovitis               0.714      0.900      0.261       94       13
+Baker's                 0.728      0.591      0.262      176       13
+Contusion               0.773      0.667      0.189      230       13
+Fracture                0.807      0.567      0.147      121       13
+MACRO                   0.788      0.654      0.224
+17:56:24 INFO   fold 4 ep 20 step 20/47 | loss 0.3453 | lr 7.37e-05 | gnorm 0.959 | 2903 samples/s | gpu mem 0.26 GB
+17:56:25 INFO   fold 4 ep 20 step 40/47 | loss 0.3369 | lr 6.78e-05 | gnorm 1.061 | 3282 samples/s | gpu mem 0.26 GB
+17:56:25 INFO [fold 4] epoch 20: train loss 0.3407 | val loss 0.4801 | macro AUC llm 0.7879 | gold 0.6527 | pred std 0.2429 | 0m01s | elapsed 0m13s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.787      0.738      0.250      303       13
+MCL                     0.726      0.091      0.131      304       13
+Medial Meniscus         0.793      0.714      0.272      319       13
+Lateral Meniscus        0.720      0.525      0.214      300       13
+Medial OA               0.870      0.700      0.305      270       13
+Lateral OA              0.798      0.773      0.273      256       13
+PF OA                   0.845      0.556      0.277      276       13
+Effusion                0.913      0.944      0.296      205       13
+Synovitis               0.714      0.900      0.278       94       13
+Baker's                 0.723      0.591      0.238      176       13
+Contusion               0.781      0.667      0.205      230       13
+Fracture                0.785      0.633      0.178      121       13
+MACRO                   0.788      0.653      0.243
+17:56:25 INFO   fold 4 ep 21 step 20/47 | loss 0.3630 | lr 6.02e-05 | gnorm 1.491 | 2829 samples/s | gpu mem 0.26 GB
+17:56:25 INFO   fold 4 ep 21 step 40/47 | loss 0.3983 | lr 5.47e-05 | gnorm 1.149 | 3257 samples/s | gpu mem 0.26 GB
+17:56:25 INFO [fold 4] epoch 21: train loss 0.3322 | val loss 0.4692 | macro AUC llm 0.7918 | gold 0.6650 | pred std 0.2303 | 0m01s | elapsed 0m13s, ETA 0m05s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.780      0.762      0.238      303       13
+MCL                     0.743      0.091      0.120      304       13
+Medial Meniscus         0.778      0.762      0.277      319       13
+Lateral Meniscus        0.712      0.625      0.182      300       13
+Medial OA               0.872      0.667      0.280      270       13
+Lateral OA              0.787      0.682      0.219      256       13
+PF OA                   0.839      0.583      0.262      276       13
+Effusion                0.915      0.972      0.313      205       13
+Synovitis               0.734      0.900      0.284       94       13
+Baker's                 0.757      0.636      0.253      176       13
+Contusion               0.779      0.667      0.201      230       13
+Fracture                0.805      0.633      0.134      121       13
+MACRO                   0.792      0.665      0.230
+17:56:26 INFO   fold 4 ep 22 step 20/47 | loss 0.3142 | lr 4.77e-05 | gnorm 0.894 | 3065 samples/s | gpu mem 0.26 GB
+17:56:26 INFO   fold 4 ep 22 step 40/47 | loss 0.3568 | lr 4.28e-05 | gnorm 1.110 | 3346 samples/s | gpu mem 0.26 GB
+17:56:26 INFO [fold 4] epoch 22: train loss 0.3222 | val loss 0.4782 | macro AUC llm 0.7853 | gold 0.6676 | pred std 0.2352 | 0m01s | elapsed 0m14s, ETA 0m04s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.775      0.738      0.225      303       13
+MCL                     0.742      0.273      0.111      304       13
+Medial Meniscus         0.785      0.762      0.279      319       13
+Lateral Meniscus        0.709      0.550      0.198      300       13
+Medial OA               0.864      0.667      0.319      270       13
+Lateral OA              0.792      0.727      0.257      256       13
+PF OA                   0.837      0.556      0.294      276       13
+Effusion                0.914      0.972      0.302      205       13
+Synovitis               0.711      0.925      0.280       94       13
+Baker's                 0.744      0.636      0.253      176       13
+Contusion               0.761      0.639      0.171      230       13
+Fracture                0.790      0.567      0.133      121       13
+MACRO                   0.785      0.668      0.235
+17:56:26 INFO   fold 4 ep 23 step 20/47 | loss 0.2732 | lr 3.65e-05 | gnorm 1.317 | 3063 samples/s | gpu mem 0.26 GB
+17:56:26 INFO   fold 4 ep 23 step 40/47 | loss 0.3000 | lr 3.21e-05 | gnorm 0.862 | 3380 samples/s | gpu mem 0.26 GB
+17:56:27 INFO [fold 4] epoch 23: train loss 0.3138 | val loss 0.4718 | macro AUC llm 0.7889 | gold 0.6730 | pred std 0.2298 | 0m01s | elapsed 0m14s, ETA 0m04s
+label                 AUC llm   AUC gold   pred std    n llm   n gold
+ACL                     0.792      0.738      0.214      303       13
+MCL                     0.745      0.182      0.111      304       13
+Medial Meniscus         0.794      0.762      0.290      319       13
+Lateral Meniscus        0.696      0.600      0.166      300       13
+Medial OA               0.864      0.600      0.298      270       13
+Lateral OA              0.785      0.682      0.235      256       13
+PF OA                   0.833      0.556      0.254      276       13
+Effusion                0.911      0.972      0.300      205       13
+Synovitis               0.709      0.900      0.276       94       13
+Baker's                 0.749      0.818      0.265      176       13
+Contusion               0.776      0.667      0.195      230       13
+Fracture                0.813      0.600      0.153      121       13
+MACRO                   0.789      0.673      0.230
+17:56:27 INFO [fold 4] early stopping at epoch 23 (no improvement for 8 epochs)
+17:56:27 INFO [fold 4] best epoch 15 | macro AUC llm 0.7987 | gold 0.6516 | checkpoint /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold4/best.pt | OOF /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1/fold4/oof.csv
+17:56:27 INFO OOF over folds [0, 1, 2, 3, 4]: macro AUC llm 0.7782 | gold 0.7401
+label                 AUC llm   AUC gold    n llm   n gold
+ACL                     0.753      0.760     1592       58
+MCL                     0.706      0.744     1604       58
+Medial Meniscus         0.755      0.639     1648       58
+Lateral Meniscus        0.710      0.677     1586       58
+Medial OA               0.836      0.851     1377       58
+Lateral OA              0.824      0.810     1276       58
+PF OA                   0.784      0.740     1447       58
+Effusion                0.912      0.824     1051       58
+Synovitis               0.780      0.771      480       58
+Baker's                 0.713      0.781      906       58
+Contusion               0.769      0.702     1169       58
+Fracture                0.796      0.583      679       58
+MACRO                   0.778      0.740
+17:56:27 INFO fold scores: fold 0: 0.7819 (ep 12), fold 1: 0.7984 (ep 18), fold 2: 0.7709 (ep 15), fold 3: 0.7811 (ep 23), fold 4: 0.7987 (ep 15)
+17:56:27 INFO worst 3 labels (LLM OOF AUC): MCL 0.706, Lateral Meniscus 0.710, Baker's 0.713
+17:56:27 INFO worst 3 labels (gold OOF AUC): Fracture 0.583, Medial Meniscus 0.639, Lateral Meniscus 0.677
+run directory: /home/longarm/development/RSNA Knee/rsna-knee/runs/full_v1
