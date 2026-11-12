@@ -5,7 +5,9 @@
 preprocess:
   image_size: 448
 backbone:
-  image_size: 224
+  image_size: 448
 features:
-  patch_grid: 0
+  patch_grid: 4
   mirror: true
+model:
+  patch_attention: true
