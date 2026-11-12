@@ -17,6 +17,8 @@ import argparse
 import json
 import shutil
 import subprocess
+import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,6 +105,29 @@ def push_dataset(folder: Path, ref: str, message: str) -> None:
     subprocess.run(cmd, check=True)
 
 
+def wait_ready(ref: str, timeout: int = 900) -> None:
+    t0 = time.time()
+    time.sleep(20)  # the status can still report the previous version right after an upload
+    while not dataset_exists(ref):
+        if time.time() - t0 > timeout:
+            raise TimeoutError(f"{ref} not ready after {timeout}s")
+        time.sleep(15)
+
+
+def dataset_version(ref: str) -> int:
+    """Current version number of a dataset. The kaggle CLI has no command for it, so ask its Python API
+    (the CLI may live in its own environment, e.g. a uv tool, so use the interpreter from its shebang)."""
+    kaggle = Path(shutil.which("kaggle")).resolve()
+    first = kaggle.read_text(errors="ignore").splitlines()[0]
+    py = first[2:].strip() if first.startswith("#!") else sys.executable
+    owner, slug = ref.split("/")
+    code = ("from kaggle.api.kaggle_api_extended import KaggleApi\n"
+            "a = KaggleApi(); a.authenticate()\n"
+            f"print(next(d.current_version_number for d in a.dataset_list(user={owner!r}, search={slug!r})"
+            f" if d.ref == {ref!r}))")
+    return int(subprocess.run([py, "-I", "-c", code], capture_output=True, text=True, check=True).stdout.split()[-1])
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--run", default=None, help="training run dir with fold*/best.pt")
@@ -161,19 +186,26 @@ def main() -> None:
     kdir = build / "kaggle" / args.kernel_name
     kdir.mkdir(parents=True, exist_ok=True)
     (kdir / f"{args.kernel_name}.ipynb").write_text(json.dumps(nb, indent=1))
-    (kdir / "kernel-metadata.json").write_text(json.dumps({
-        "id": f"{user}/{args.kernel_name}", "title": args.kernel_name, "code_file": f"{args.kernel_name}.ipynb",
-        "language": "python", "kernel_type": "notebook", "is_private": True, "enable_gpu": not args.cpu,
-        "enable_tpu": False, "enable_internet": False, **({} if args.cpu else {"machine_shape": "NvidiaTeslaT4"}),
-        "dataset_sources": [f"{user}/knee-inference", f"{user}/knee-weights"],
-        "competition_sources": [COMPETITION], "kernel_sources": [], "model_sources": [],
-    }, indent=1))
-    print(f"built {kdir} and notebooks/kaggle_inference.ipynb")
 
+    sources = [f"{user}/knee-inference", f"{user}/knee-weights"]
     if args.push_weights:
         push_dataset(wdir, f"{user}/knee-weights", args.message)
     if args.push_bundle:
         push_dataset(bdir, f"{user}/knee-inference", args.message)
+    if args.push_kernel:
+        # an existing kernel keeps its previously attached dataset versions unless the sources are pinned
+        for ref in sources:
+            wait_ready(ref)
+        sources = [f"{ref}/{dataset_version(ref)}" for ref in sources]
+    (kdir / "kernel-metadata.json").write_text(json.dumps({
+        "id": f"{user}/{args.kernel_name}", "title": args.kernel_name, "code_file": f"{args.kernel_name}.ipynb",
+        "language": "python", "kernel_type": "notebook", "is_private": True, "enable_gpu": not args.cpu,
+        "enable_tpu": False, "enable_internet": False, **({} if args.cpu else {"machine_shape": "NvidiaTeslaT4"}),
+        "dataset_sources": sources,
+        "competition_sources": [COMPETITION], "kernel_sources": [], "model_sources": [],
+    }, indent=1))
+    print(f"built {kdir} and notebooks/kaggle_inference.ipynb | datasets {', '.join(sources)}")
+
     if args.push_kernel:
         cmd = ["kaggle", "kernels", "push", "-p", str(kdir)]
         subprocess.run(cmd if args.cpu else cmd + ["--accelerator", "NvidiaTeslaT4"], check=True)
